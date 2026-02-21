@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import colors from "../../theme/colors";
 
+// The styling looks a bit off right now, but it'll come together once we add the Google sign-in button at the end.
 export const SignIn: React.FC = () => {
   return (
     <View style={styles.container}>
@@ -69,15 +70,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
     justifyContent: "center",
+    marginBottom: "35%",
   },
   backgroundImage: {
     width: "85%",
     aspectRatio: 1,
   },
   bottomWrapper: {
+    position: "absolute",
+    bottom: "24%",
     alignItems: "center",
-    marginTop: "auto",
-    marginBottom: "15%",
+    alignSelf: "center",
   },
   signInWithEmailButton: {
     width: 313,
@@ -100,6 +103,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "500",
     textDecorationLine: "underline",
-    marginTop: 12,
+    marginTop: 8,
   },
 });
