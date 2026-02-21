@@ -1,11 +1,21 @@
 import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { SignInStackParamList } from "../../navigation/SignInNavigator";
 import colors from "../../theme/colors";
 
 // The styling looks a bit off right now, but it'll come together once we add the Google sign-in button at the end.
+
+type NavigationProp = NativeStackNavigationProp<SignInStackParamList, "SignIn">;
+
 export const SignIn: React.FC = () => {
+  // Accesses stack navigation for moving to other screens
+  const navigation = useNavigation<NavigationProp>();
+
   return (
     <View style={styles.container}>
+      {/* App title + tagline */}
       <View style={styles.headerWrapper}>
         <Text style={styles.title}>PantryChef</Text>
         <Text style={styles.subTitle}>
@@ -13,6 +23,7 @@ export const SignIn: React.FC = () => {
         </Text>
       </View>
 
+      {/* Hero image */}
       <View style={styles.imageWrapper}>
         <Image
           source={require("../../../assets/images/sign-in/background-image.png")}
@@ -21,10 +32,11 @@ export const SignIn: React.FC = () => {
         />
       </View>
 
+      {/* Bottom sign in section */}
       <View style={styles.bottomWrapper}>
         <TouchableOpacity
           style={styles.signInWithEmailButton}
-          onPress={() => null}
+          onPress={() => navigation.navigate("SignInWithEmail")}
         >
           <Image
             source={require("../../../assets/icons/email-icon.png")}
@@ -32,6 +44,8 @@ export const SignIn: React.FC = () => {
           />
           <Text style={styles.signInWithEmailText}>Sign in with Email</Text>
         </TouchableOpacity>
+
+        {/* Placeholder for future password recovery */}
         <TouchableOpacity>
           <Text style={styles.forgotPasswordText}>Forgot Password</Text>
         </TouchableOpacity>
@@ -39,7 +53,6 @@ export const SignIn: React.FC = () => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
