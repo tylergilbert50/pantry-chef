@@ -28,7 +28,7 @@ export const SignIn: React.FC = () => {
         >
           <Image
             source={require("../../../assets/icons/email-icon.png")}
-            style={{ width: 32, height: 32, marginRight: 13 }}
+            style={{ width: 32, height: 32 }}
           />
           <Text style={styles.signInWithEmailText}>Sign in with Email</Text>
         </TouchableOpacity>
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   subTitle: {
     color: "white",
     textAlign: "center",
-    fontFamily: "Montserrat_700Bold",
+    fontFamily: "Montserrat_600SemiBold",
     fontSize: 17,
     letterSpacing: -0.85,
     marginTop: 5,
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   signInWithEmailButton: {
-    width: 313,
+    width: "100%",
     height: 49,
     backgroundColor: colors.secondary,
     borderRadius: 14,
@@ -96,6 +96,7 @@ const styles = StyleSheet.create({
     fontFamily: "SF Pro",
     fontSize: 19,
     fontWeight: "600",
+    marginLeft: 18,
   },
   forgotPasswordText: {
     color: "white",
