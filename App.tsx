@@ -4,6 +4,7 @@ import { useFonts, InriaSerif_700Bold } from "@expo-google-fonts/inria-serif";
 import { Montserrat_700Bold } from "@expo-google-fonts/montserrat";
 import { supabase } from "./src/lib/supabaseClient";
 import { RootNavigator } from "./src/navigation/RootNavigator";
+import { Recipes } from "./src/screens/recipes/Recipes";
 
 export default function App() {
   // Load required fonts before rendering the app
@@ -45,5 +46,5 @@ export default function App() {
 
   // RootNavigator controls whether the user sees
   // the authentication flow or the main app
-  return <RootNavigator session={session} />;
+  return <Recipes/>//<RootNavigator session={session} />;
 }
