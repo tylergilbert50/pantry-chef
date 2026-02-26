@@ -3,7 +3,7 @@ import { Session } from "@supabase/supabase-js";
 import { useFonts, InriaSerif_700Bold } from "@expo-google-fonts/inria-serif";
 import { Montserrat_700Bold } from "@expo-google-fonts/montserrat";
 import { supabase } from "./src/lib/supabaseClient";
-import { RootNavigator } from "./src/navigation/RootNavigator";
+import { Navbar } from "./src/components/Navbar";
 
 export default function App() {
   // Load required fonts before rendering the app
@@ -45,5 +45,5 @@ export default function App() {
 
   // RootNavigator controls whether the user sees
   // the authentication flow or the main app
-  return <RootNavigator session={session} />;
+  return <Navbar/>;
 }
