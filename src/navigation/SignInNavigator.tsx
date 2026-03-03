@@ -15,9 +15,21 @@ const Stack = createNativeStackNavigator<SignInStackParamList>();
 
 export function SignInNavigator() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="SignIn" component={SignIn} />
-      <Stack.Screen name="SignInWithEmail" component={SignInWithEmail} />
+    <Stack.Navigator>
+      <Stack.Screen
+        name="SignIn"
+        component={SignIn}
+        options={{ headerShown: false }}
+      />
+
+      <Stack.Screen
+        name="SignInWithEmail"
+        component={SignInWithEmail}
+        options={{
+          presentation: "modal",
+          headerShown: false,
+        }}
+      />
     </Stack.Navigator>
   );
 }

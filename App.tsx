@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { Session } from "@supabase/supabase-js";
 import { useFonts, InriaSerif_700Bold } from "@expo-google-fonts/inria-serif";
-import { Montserrat_700Bold } from "@expo-google-fonts/montserrat";
+import {
+  Montserrat_700Bold,
+  Montserrat_600SemiBold,
+  Montserrat_400Regular,
+} from "@expo-google-fonts/montserrat";
 import { supabase } from "./src/lib/supabaseClient";
 import { RootNavigator } from "./src/navigation/RootNavigator";
 
@@ -9,6 +13,8 @@ export default function App() {
   // Load required fonts before rendering the app
   const [fontsLoaded] = useFonts({
     InriaSerif_700Bold,
+    Montserrat_400Regular,
+    Montserrat_600SemiBold,
     Montserrat_700Bold,
   });
 

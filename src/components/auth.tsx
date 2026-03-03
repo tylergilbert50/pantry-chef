@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useEffect } from "react";
 import {
   Alert,
   StyleSheet,
@@ -8,17 +7,14 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
-// import {
-//   GoogleSignin,
-//   GoogleSigninButton,
-//   statusCodes,
-// } from "@react-native-google-signin/google-signin";
 import { supabase } from "../lib/supabaseClient";
+import colors from "../theme/colors";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function signInWithEmail() {
     setLoading(true);
@@ -26,7 +22,6 @@ export default function Auth() {
       email: email,
       password: password,
     });
-
     if (error) Alert.alert(error.message);
     setLoading(false);
   }
@@ -40,92 +35,81 @@ export default function Auth() {
       email: email,
       password: password,
     });
-
     if (error) Alert.alert(error.message);
     if (!session)
       Alert.alert("Please check your inbox for email verification!");
     setLoading(false);
   }
 
-  // useEffect(() => {
-  //   GoogleSignin.configure({
-  //     webClientId:
-  //       "1073299924675-r0l6cq7l927h0e7c9unkkc5p4ogfhb6a.apps.googleusercontent.com",
-  //   });
-  // }, []);
+  async function handleForgotPassword() {
+    if (!email) {
+      Alert.alert("Enter your email first.");
+      return;
+    }
 
-  // async function signInWithGoogle() {
-  //   try {
-  //     await GoogleSignin.hasPlayServices();
-  //     const response = await GoogleSignin.signIn();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: "pantrychef://reset-password",
+    });
 
-  //     if (response.data?.idToken) {
-  //       const { data, error } = await supabase.auth.signInWithIdToken({
-  //         provider: "google",
-  //         token: response.data.idToken,
-  //       });
-
-  //       if (error) {
-  //         console.log("Supabase error:", error);
-  //       }
-  //     }
-  //   } catch (error: any) {
-  //     if (error.code === statusCodes.IN_PROGRESS) {
-  //       console.log("Already signing in");
-  //     } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-  //       console.log("Play services not available");
-  //     } else {
-  //       console.log(error);
-  //     }
-  //   }
-  // }
-
+    if (error) {
+      Alert.alert(error.message);
+    } else {
+      Alert.alert("Password reset email sent!");
+    }
+  }
   return (
-    <View style={styles.container}>
-      <View style={[styles.verticallySpaced, styles.mt20]}>
+    <View>
+      <View>
         <Text style={styles.label}>Email</Text>
         <TextInput
           onChangeText={(text) => setEmail(text)}
           value={email}
-          placeholder="email@address.com"
+          placeholder="Enter your email"
           autoCapitalize="none"
           style={styles.input}
+          underlineColorAndroid="transparent"
+          keyboardType="email-address"
+          autoCorrect={false}
+          textContentType="emailAddress"
+          autoComplete="email"
+          returnKeyType="next"
         />
       </View>
-      <View style={styles.verticallySpaced}>
+      <View>
         <Text style={styles.label}>Password</Text>
-        <TextInput
-          onChangeText={(text) => setPassword(text)}
-          value={password}
-          secureTextEntry={true}
-          placeholder="Password"
-          autoCapitalize="none"
-          style={styles.input}
-        />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            onChangeText={(text) => setPassword(text)}
+            value={password}
+            secureTextEntry={!showPassword}
+            placeholder="Enter your password"
+            autoCapitalize="none"
+            style={[styles.input, { flex: 1 }]}
+            underlineColorAndroid="transparent"
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
+            style={styles.toggleButton}
+          >
+            <Text style={styles.toggleText}>
+              {showPassword ? "Hide" : "Show"}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      <View style={[styles.verticallySpaced, styles.mt20]}>
+      <TouchableOpacity
+        onPress={handleForgotPassword}
+        style={styles.forgotPassword}
+      >
+        <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+      </TouchableOpacity>
+      <View>
         <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}
           onPress={() => signInWithEmail()}
           disabled={loading}
         >
-          <Text style={styles.buttonText}>Sign in</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.verticallySpaced}>
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={() => signUpWithEmail()}
-          disabled={loading}
-        >
-          <View style={[styles.verticallySpaced, styles.mt20]}>
-            {/* <GoogleSigninButton
-              size={GoogleSigninButton.Size.Wide}
-              color={GoogleSigninButton.Color.Dark}
-              onPress={signInWithGoogle}
-            /> */}
-          </View>
-          <Text style={styles.buttonText}>Sign up</Text>
+          <Text style={styles.buttonText}>Login</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -133,40 +117,60 @@ export default function Auth() {
 }
 
 const styles = StyleSheet.create({
-  container: {},
-  verticallySpaced: {
-    paddingTop: 4,
-    paddingBottom: 4,
-    alignSelf: "stretch",
-  },
-  mt20: {
-    marginTop: 20,
-  },
   label: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#86939e",
+    fontSize: 18,
+    fontWeight: "500",
+    color: "Black",
     marginBottom: 6,
+    marginTop: 40,
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#86939e",
-    borderRadius: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ADADAD",
+    fontFamily: "Montserrat_400",
+    paddingHorizontal: 0,
     padding: 12,
     fontSize: 16,
+    marginBottom: -10,
+  },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    position: "relative",
+  },
+  toggleButton: {
+    position: "absolute",
+    right: 0,
+    bottom: 4,
+  },
+  toggleText: {
+    color: colors.secondary,
+    fontSize: 14,
+    fontWeight: "600",
   },
   button: {
-    backgroundColor: "#2089dc",
-    borderRadius: 4,
+    backgroundColor: colors.secondary,
+    borderRadius: 50,
     padding: 12,
     alignItems: "center",
+    marginTop: 45,
+    width: 315,
   },
   buttonDisabled: {
     opacity: 0.5,
   },
   buttonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  forgotPassword: {
+    alignSelf: "flex-end",
+    marginTop: 50,
+  },
+  forgotPasswordText: {
+    fontSize: 14,
+    color: "#8A8A8A",
+    fontFamily: "Montserrat_400",
   },
 });
