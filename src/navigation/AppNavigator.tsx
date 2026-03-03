@@ -1,30 +1,132 @@
-// AppNavigator defines the main app navigation stack (Home, Pantry, Recipes, Account)
-// It is rendered after the user has signed in
+// AppNavigator defines the main app navigation stack
+// Rendered after the user signs in
 
 import React from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { Image, View, StyleSheet } from "react-native";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
 import { Barcode } from "../screens/barcode/Barcode";
 import { Pantry } from "../screens/pantry/Pantry";
 import { Recipes } from "../screens/recipes/Recipes";
 import { Account } from "../screens/account/Account";
+import colors from "../theme/colors";
 
-export type AppStackParamList = {
-  Home: undefined;
+export type AppTabParamList = {
   Pantry: undefined;
   Recipes: undefined;
+  Home: undefined;
   Account: undefined;
 };
 
-const Stack = createNativeStackNavigator<AppStackParamList>();
+const Tab = createBottomTabNavigator<AppTabParamList>();
+
+type TabIconProps = {
+  source: any;
+  focused: boolean;
+};
+
+function TabIcon({ source, focused }: TabIconProps) {
+  return (
+    <View style={styles.iconWrapper}>
+      <Image source={source} resizeMode="contain" style={styles.icon} />
+
+      {focused && <View style={styles.indicator} />}
+    </View>
+  );
+}
 
 export function AppNavigator() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Home" component={Barcode} />
-      <Stack.Screen name="Pantry" component={Pantry} />
-      <Stack.Screen name="Recipes" component={Recipes} />
-      <Stack.Screen name="Account" component={Account} />
-    </Stack.Navigator>
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarShowLabel: false,
+        tabBarStyle: styles.tabBar,
+      }}
+    >
+      <Tab.Screen
+        name="Pantry"
+        component={Pantry}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              source={require("../../assets/icons/navbar/pantry-icon.png")}
+              focused={focused}
+            />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="Recipes"
+        component={Recipes}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              source={require("../../assets/icons/navbar/recipe-icon.png")}
+              focused={focused}
+            />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="Home"
+        component={Barcode}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              source={require("../../assets/icons/navbar/barcode.icon.png")}
+              focused={focused}
+            />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="Account"
+        component={Account}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              source={require("../../assets/icons/navbar/profile-icon.png")}
+              focused={focused}
+            />
+          ),
+        }}
+      />
+    </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    height: 80,
+    backgroundColor: colors.primary,
+    borderTopWidth: 0,
+    elevation: 0,
+  },
+
+  iconWrapper: {
+    width: 60,
+    height: 60,
+    marginTop: 25,
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+  },
+
+  icon: {
+    width: 40,
+    height: 40,
+  },
+
+  indicator: {
+    position: "absolute",
+    bottom: -8,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.white,
+  },
+});
