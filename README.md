@@ -1,6 +1,6 @@
 # Pantry Chef
 
-> A Mobile App that helps you make better use of the food you already have at home by suggesting recipes based on your current pantry inventory.
+> A mobile app that helps you make better use of the food you already have at home by suggesting recipes based on your current pantry inventory.
 
 ## About
 

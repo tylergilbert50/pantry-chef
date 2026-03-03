@@ -16,21 +16,17 @@ export const SignIn: React.FC = () => {
   return (
     <View style={styles.container}>
       {/* App title + tagline */}
-      <View style={styles.headerWrapper}>
-        <Text style={styles.title}>PantryChef</Text>
-        <Text style={styles.subTitle}>
-          Cook what you own. Save what you earn.
-        </Text>
-      </View>
+      <Text style={styles.title}>PantryChef</Text>
+      <Text style={styles.subTitle}>
+        Cook what you own. Save what you earn.
+      </Text>
 
       {/* Hero image */}
-      <View style={styles.imageWrapper}>
-        <Image
-          source={require("../../../assets/images/sign-in/background-image.png")}
-          style={styles.backgroundImage}
-          resizeMode="contain"
-        />
-      </View>
+      <Image
+        source={require("../../../assets/images/sign-in/background-image.png")}
+        style={styles.backgroundImage}
+        resizeMode="contain"
+      />
 
       {/* Bottom sign in section */}
       <View style={styles.bottomWrapper}>
@@ -44,11 +40,6 @@ export const SignIn: React.FC = () => {
           />
           <Text style={styles.signInWithEmailText}>Sign in with Email</Text>
         </TouchableOpacity>
-
-        {/* Placeholder for future password recovery */}
-        <TouchableOpacity>
-          <Text style={styles.forgotPasswordText}>Forgot Password</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -58,11 +49,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.primary,
     alignItems: "center",
-    paddingVertical: 60,
-  },
-  headerWrapper: {
-    alignItems: "center",
-    marginTop: "5%",
+    paddingVertical: 70,
   },
   title: {
     color: "white",
@@ -78,26 +65,19 @@ const styles = StyleSheet.create({
     letterSpacing: -0.85,
     marginTop: 5,
   },
-  imageWrapper: {
-    width: "100%",
-    alignItems: "center",
-    flex: 1,
-    justifyContent: "center",
-    marginBottom: "35%",
-  },
   backgroundImage: {
     width: "85%",
     aspectRatio: 1,
   },
   bottomWrapper: {
     position: "absolute",
-    bottom: "24%",
+    bottom: "28%",
     alignItems: "center",
     alignSelf: "center",
   },
   signInWithEmailButton: {
     width: "100%",
-    height: 49,
+    height: 50,
     backgroundColor: colors.secondary,
     borderRadius: 14,
     justifyContent: "center",
@@ -110,13 +90,5 @@ const styles = StyleSheet.create({
     fontSize: 19,
     fontWeight: "600",
     marginLeft: 18,
-  },
-  forgotPasswordText: {
-    color: "white",
-    fontFamily: "SF Pro",
-    fontSize: 16,
-    fontWeight: "500",
-    textDecorationLine: "underline",
-    marginTop: 8,
   },
 });

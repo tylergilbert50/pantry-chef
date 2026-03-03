@@ -1,15 +1,50 @@
-import React from "react";
-import { View, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, Text, StyleSheet, Image } from "react-native";
+import colors from "../../theme/colors";
+import Auth from "../../components/auth";
+import { ForgotPassword } from "./ForgotPassword";
+import { Register } from "./Register";
 
-export function SignInWithEmail() {
-  return <View style={styles.container}></View>;
-}
+export const SignInWithEmail: React.FC = ({ navigation }: any) => {
+  const [view, setView] = useState<"login" | "forgot" | "register">("login");
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>PantryChef</Text>
+      <Image
+        source={require("../../../assets/icons/pantrychef-icon.png")}
+        style={styles.icon}
+        resizeMode="contain"
+      />
+      {view === "login" && (
+        <Auth
+          onForgot={() => setView("forgot")}
+          onRegister={() => setView("register")}
+        />
+      )}
+      {view === "forgot" && <ForgotPassword onBack={() => setView("login")} />}
+      {view === "register" && <Register onBack={() => setView("login")} />}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
-    justifyContent: "center",
+    backgroundColor: "white",
     alignItems: "center",
+    paddingVertical: 60,
+  },
+  title: {
+    color: colors.primary,
+    textAlign: "center",
+    fontFamily: "InriaSerif_700Bold",
+    fontSize: 48,
+  },
+  icon: {
+    marginLeft: 10,
+    marginTop: 10,
+    width: 160,
+    height: 160,
   },
 });
