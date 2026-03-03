@@ -10,7 +10,12 @@ import {
 import { supabase } from "../lib/supabaseClient";
 import colors from "../theme/colors";
 
-export default function Auth() {
+type Props = {
+  onForgot: () => void;
+  onRegister: () => void;
+};
+
+export default function Auth({ onForgot, onRegister }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,37 +31,6 @@ export default function Auth() {
     setLoading(false);
   }
 
-  async function signUpWithEmail() {
-    setLoading(true);
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-    });
-    if (error) Alert.alert(error.message);
-    if (!session)
-      Alert.alert("Please check your inbox for email verification!");
-    setLoading(false);
-  }
-
-  async function handleForgotPassword() {
-    if (!email) {
-      Alert.alert("Enter your email first.");
-      return;
-    }
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: "pantrychef://reset-password",
-    });
-
-    if (error) {
-      Alert.alert(error.message);
-    } else {
-      Alert.alert("Password reset email sent!");
-    }
-  }
   return (
     <View>
       <View>
@@ -97,10 +71,7 @@ export default function Auth() {
           </TouchableOpacity>
         </View>
       </View>
-      <TouchableOpacity
-        onPress={handleForgotPassword}
-        style={styles.forgotPassword}
-      >
+      <TouchableOpacity onPress={onForgot} style={styles.forgotPassword}>
         <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
       </TouchableOpacity>
       <View>
@@ -111,6 +82,14 @@ export default function Auth() {
         >
           <Text style={styles.buttonText}>Login</Text>
         </TouchableOpacity>
+      </View>
+      <View style={styles.registerContainer}>
+        <Text style={styles.registerText}>
+          Don't have an account yet?{" "}
+          <Text style={styles.registerLink} onPress={onRegister}>
+            Register here
+          </Text>
+        </Text>
       </View>
     </View>
   );
@@ -165,12 +144,24 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   forgotPassword: {
-    alignSelf: "flex-end",
-    marginTop: 50,
+    alignSelf: "center",
+    marginTop: 25,
   },
   forgotPasswordText: {
     fontSize: 14,
     color: "#8A8A8A",
     fontFamily: "Montserrat_400",
+  },
+  registerContainer: {
+    marginTop: 25,
+    alignItems: "center",
+  },
+  registerText: {
+    fontSize: 16,
+    fontFamily: "Montserrat_400",
+  },
+  registerLink: {
+    color: colors.secondary,
+    fontWeight: "600",
   },
 });
