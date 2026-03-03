@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
+    "supabase": "^2.76.16",
     "typescript": "~5.9.2"
   },
   "overrides": {
