@@ -1,8 +1,13 @@
 import React, { useState } from "react";
 import { View, Text, Image, StyleSheet, ScrollView } from "react-native";
 
-export function Recipes() {
-  const heroImage = useState("../../assets/images/placeholders/rice.png");
+type RecipeProps = {
+  title: string;
+  recipeType: string;
+  detailCards: Record<string, string>;
+};
+
+export function Recipes({title, recipeType, detailCards}: RecipeProps) {
   return (
     <View style={styles.container}>
       <Image
@@ -14,10 +19,10 @@ export function Recipes() {
       <ScrollView style={styles.scrollView} contentContainerStyle={{ paddingBottom: 100 }}>
         <View style={styles.card}>
           <Text style={styles.title}>
-            Chicken Fried Rice
+            {title}
           </Text>
           <Text style={styles.recipeType}>
-            Lunch / Dinner
+            {recipeType}
           </Text>
           <Text style={styles.bodyText}>
             Hello there!
@@ -30,22 +35,13 @@ export function Recipes() {
             culpa qui officia deserunt mollit anim id est laborum.
           </Text>
           <View style={styles.horizontalFlex}>
-            <View style={styles.detailCard}>
-              <Text style={styles.infoText}>Calories</Text>
-              <Text style={styles.bold}>350</Text>
-            </View>
-            <View style={styles.detailCard}>
-              <Text style={styles.infoText}>Carbs</Text>
-              <Text style={styles.bold}>350</Text>
-            </View>
-            <View style={styles.detailCard}>
-              <Text style={styles.infoText}>Fats</Text>
-              <Text style={styles.bold}>350</Text>
-            </View>
-            <View style={styles.detailCard}>
-              <Text style={styles.infoText}>Protein</Text>
-              <Text style={styles.bold}>350</Text>
-            </View>
+            {Object.entries(detailCards).map(([name, value]) => (
+              <View style={styles.detailCard}>
+                <Text style={styles.infoText}>{name}</Text>
+                <Text style={styles.bold}>{value}</Text>
+              </View>
+
+            ))}
           </View>
           <Text style={styles.header}>
             Ingredients

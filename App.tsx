@@ -46,5 +46,14 @@ export default function App() {
 
   // RootNavigator controls whether the user sees
   // the authentication flow or the main app
-  return <Recipes/>//<RootNavigator session={session} />;
+  return <Recipes
+    title={"Rice"} recipeType={"Lunch / Dinner / Breakfast / Snack"}
+    detailCards={{
+      "Calories": "350",
+      "Carbs": "36/g",
+      "Fats": "44/g",
+      "Protein": "30/g",
+      "Protein2": "30/g"
+    }}
+    />//<RootNavigator session={session} />;
 }
