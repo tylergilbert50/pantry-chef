@@ -103,8 +103,6 @@ const styles = StyleSheet.create({
   tabBar: {
     height: 80,
     backgroundColor: colors.primary,
-    borderTopWidth: 0,
-    elevation: 0,
   },
 
   iconWrapper: {
@@ -117,15 +115,15 @@ const styles = StyleSheet.create({
   },
 
   icon: {
-    width: 40,
-    height: 40,
+    width: 30,
+    height: 30,
   },
 
   indicator: {
     position: "absolute",
-    bottom: -8,
-    width: 10,
-    height: 10,
+    bottom: 0,
+    width: 7,
+    height: 7,
     borderRadius: 5,
     backgroundColor: colors.white,
   },

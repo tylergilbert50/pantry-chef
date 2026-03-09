@@ -7,14 +7,12 @@ import {
   Alert,
   StyleSheet,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { supabase } from "../../lib/supabaseClient";
 import colors from "../../theme/colors";
 
-type Props = {
-  onBack: () => void;
-};
-
-export const Register: React.FC<Props> = ({ onBack }) => {
+export const Register: React.FC = () => {
+  const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -81,7 +79,7 @@ export const Register: React.FC<Props> = ({ onBack }) => {
       <View style={styles.loginContainer}>
         <Text style={styles.loginText}>
           Already have an account?{" "}
-          <Text style={styles.loginLink} onPress={onBack}>
+          <Text style={styles.loginLink} onPress={() => navigation.goBack()}>
             Login here
           </Text>
         </Text>
@@ -89,7 +87,6 @@ export const Register: React.FC<Props> = ({ onBack }) => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   label: {
     fontSize: 18,
