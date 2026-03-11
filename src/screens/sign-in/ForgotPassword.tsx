@@ -7,14 +7,12 @@ import {
   Alert,
   StyleSheet,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { supabase } from "../../lib/supabaseClient";
 import colors from "../../theme/colors";
 
-type Props = {
-  onBack: () => void;
-};
-
-export const ForgotPassword: React.FC<Props> = ({ onBack }) => {
+export const ForgotPassword: React.FC = () => {
+  const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -53,13 +51,12 @@ export const ForgotPassword: React.FC<Props> = ({ onBack }) => {
       >
         <Text style={styles.buttonText}>Send Reset Email</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={onBack} style={styles.back}>
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
         <Text style={styles.backText}>Back to Login</Text>
       </TouchableOpacity>
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   label: {
     fontSize: 18,
@@ -86,7 +83,7 @@ const styles = StyleSheet.create({
     width: 315,
   },
   buttonText: {
-    color: "#FFFFFF",
+    color: colors.white,
     fontSize: 18,
     fontWeight: "700",
   },
