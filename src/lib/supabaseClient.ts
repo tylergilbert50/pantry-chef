@@ -25,3 +25,5 @@ if (Platform.OS !== "web") {
     }
   });
 }
+
+console.log('URL:', process.env.EXPO_PUBLIC_SUPABASE_URL);

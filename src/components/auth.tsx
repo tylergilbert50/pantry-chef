@@ -7,8 +7,15 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
+// import {
+//   GoogleSignin,
+//   GoogleSigninButton,
+//   statusCodes,
+// } from "@react-native-google-signin/google-signin";
+import { signIn, signUp } from "../services/authService";
 import { supabase } from "../lib/supabaseClient";
 import colors from "../theme/colors";
+
 
 type Props = {
   onForgot: () => void;
@@ -23,10 +30,19 @@ export default function Auth({ onForgot, onRegister }: Props) {
 
   async function signInWithEmail() {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
-    });
+    const { error } = await signIn(email, password);
+
+    if (error) Alert.alert(error.message);
+    setLoading(false);
+  }
+
+  async function signUpWithEmail() {
+    setLoading(true);
+    const {
+      data: { session },
+      error,
+    } = await signUp(email, password);
+
     if (error) Alert.alert(error.message);
     setLoading(false);
   }
