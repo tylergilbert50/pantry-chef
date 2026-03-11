@@ -3,4 +3,4 @@ node_modules
 .env.*
 supabase_linux_amd64.tar.gz
 supabase/.temp/
-.idea/
+.idea/scripts/*.js

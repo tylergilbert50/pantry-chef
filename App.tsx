@@ -5,6 +5,7 @@ import { Montserrat_700Bold } from "@expo-google-fonts/montserrat";
 import { supabase } from "./src/lib/supabaseClient";
 import { RootNavigator } from "./src/navigation/RootNavigator";
 
+import { getIngredients } from './src/services/ingredientService';
 export default function App() {
   // Load required fonts before rendering the app
   const [fontsLoaded] = useFonts({

@@ -13,7 +13,7 @@ import {
 //   GoogleSigninButton,
 //   statusCodes,
 // } from "@react-native-google-signin/google-signin";
-import { supabase } from "../lib/supabaseClient";
+import { signIn, signUp } from "../services/authService";
 
 export default function Auth() {
   const [email, setEmail] = useState("");
@@ -22,10 +22,7 @@ export default function Auth() {
 
   async function signInWithEmail() {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
-    });
+    const { error } = await signIn(email, password);
 
     if (error) Alert.alert(error.message);
     setLoading(false);
@@ -36,10 +33,7 @@ export default function Auth() {
     const {
       data: { session },
       error,
-    } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-    });
+    } = await signUp(email, password);
 
     if (error) Alert.alert(error.message);
     if (!session)
