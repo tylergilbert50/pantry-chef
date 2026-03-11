@@ -47,6 +47,11 @@ We use the Spoonacular API for: recipe search, filtering, ingredient normalizati
 
 ## Known Issues
 
+### Known Audit Warnings
+The `npm audit` output shows Angular vulnerabilities — these come from
+`@expo/vector-icons` transitive dependencies and do not affect our app.
+We don't use Angular. Safe to ignore.
+
 ## Future Features/Enhancements
 
 ## License
