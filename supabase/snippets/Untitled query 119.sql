@@ -1,1 +1,0 @@
-SELECT encrypted_password FROM auth.users WHERE email = 'ashton@example.com';
