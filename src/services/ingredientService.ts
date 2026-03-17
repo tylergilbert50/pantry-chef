@@ -21,7 +21,8 @@ interface IngredientFilters {
 export const addIngredient = async (ingredient: IngredientInsert) => {
     const { data, error } = await supabase
         .from('pantry_ingredients')
-        .insert(ingredient);
+        .insert(ingredient)
+        .select();
     return { data, error };
 };
 
@@ -42,6 +43,7 @@ export const updateIngredient = async (
     const { data, error } = await supabase
         .from('pantry_ingredients')
         .update(updates)
+        .select()
         .eq('ingredient_id', ingredientId)
         .eq('pantry_id', pantryId);
     return { data, error };
