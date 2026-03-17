@@ -56,6 +56,6 @@ export default function App() {
     }}
     textIntro="This is a recipe for basic fried rice. Total estimated cooking time is 2 hours."
     ingredients={{items: ["3 cups Jasmine rice","4 lbs Chicken", "5 carrots", "2 bunches green onions", "Frozen peas", "Sesame seed oil", "Soy sauce"]}}
-    bodyText="Rinse the rice until the water runs clear. Place rice in rice cooker and start the rice cooker."
+    bodyText="Rinse the rice until the water runs clear. Place rice in rice cooker and start the rice cooker. Dice carrot and green onions."
     /> //<RootNavigator session={session} />;
 }
