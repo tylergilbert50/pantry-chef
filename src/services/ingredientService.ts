@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabase';
 import { Database } from '../../types/database.types';
 
 type Ingredient = Database['public']['Tables']['pantry_ingredients']['Row'];

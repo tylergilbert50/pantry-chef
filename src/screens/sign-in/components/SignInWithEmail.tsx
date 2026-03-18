@@ -1,18 +1,18 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
-import colors from "../../theme/colors";
-import Auth from "../../components/auth";
-import { ForgotPassword } from "./ForgotPassword";
-import { Register } from "./Register";
+import colors from "../../../theme/colors";
+import { Auth } from "../../../components/auth";
+import { ForgotPassword } from "../components/ForgotPassword";
+import { Register } from "../components/Register";
 
-export const SignInWithEmail: React.FC = ({ navigation }: any) => {
+export const SignInWithEmail: React.FC = () => {
   const [view, setView] = useState<"login" | "forgot" | "register">("login");
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>PantryChef</Text>
       <Image
-        source={require("../../../assets/icons/pantrychef-icon.png")}
+        source={require("../../../../assets/icons/pantrychef-icon.png")}
         style={styles.icon}
         resizeMode="contain"
       />
