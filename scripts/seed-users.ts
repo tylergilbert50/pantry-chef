@@ -1,18 +1,22 @@
 console.log('starting seed...');
 
-import 'dotenv/config';
+import { config } from 'dotenv';
+config({ path: '.env.local' });
+config();
 import { createClient } from '@supabase/supabase-js';
 
+
+// Admin client with service_role key to bypass RLS
+const admin = createClient(
+    process.env.EXPO_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+// Anon client for testing sign-in at the end
 const supabase = createClient(
     process.env.EXPO_PUBLIC_SUPABASE_URL!,
     process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!
 );
-
-function daysAgo(n: number): string {
-    const d = new Date();
-    d.setDate(d.getDate() - n);
-    return d.toISOString().split('T')[0];
-}
 
 interface UserSeed {
     email: string;
@@ -36,9 +40,9 @@ const userSeeds: UserSeed[] = [
             { name: 'nut_free',    state: false },
         ],
         recipes: [
-            { recipe_id: 1001, recipe_name: 'Chicken Stir Fry',     saved: true,  made_on: daysAgo(3) },
+            { recipe_id: 1001, recipe_name: 'Chicken Stir Fry',     saved: true,  made_on: '2026-03-10' },
             { recipe_id: 1002, recipe_name: 'Garlic Butter Pasta',  saved: true,  made_on: null },
-            { recipe_id: 1003, recipe_name: 'Cheesy Broccoli Rice', saved: false, made_on: daysAgo(1) },
+            { recipe_id: 1003, recipe_name: 'Cheesy Broccoli Rice', saved: false, made_on: '2026-03-15' },
         ],
     },
     {
@@ -53,8 +57,8 @@ const userSeeds: UserSeed[] = [
             { name: 'nut_free',    state: true },
         ],
         recipes: [
-            { recipe_id: 2001, recipe_name: 'Spinach & Lemon Salad', saved: true, made_on: daysAgo(5) },
-            { recipe_id: 2002, recipe_name: 'Avocado Toast',         saved: true, made_on: daysAgo(0) },
+            { recipe_id: 2001, recipe_name: 'Spinach & Lemon Salad', saved: true, made_on: '2026-03-05' },
+            { recipe_id: 2002, recipe_name: 'Avocado Toast',         saved: true, made_on: '2026-03-18' },
         ],
     },
     {
@@ -69,7 +73,7 @@ const userSeeds: UserSeed[] = [
             { name: 'nut_free',    state: false },
         ],
         recipes: [
-            { recipe_id: 3001, recipe_name: 'Pan-Seared Salmon',    saved: true,  made_on: daysAgo(2) },
+            { recipe_id: 3001, recipe_name: 'Pan-Seared Salmon',    saved: true,  made_on: '2026-03-12' },
             { recipe_id: 3002, recipe_name: 'Tomato Butter Salmon', saved: false, made_on: null },
         ],
     },
@@ -77,9 +81,11 @@ const userSeeds: UserSeed[] = [
 
 async function seed() {
     for (const u of userSeeds) {
-        const { data: authData, error: authError } = await supabase.auth.signUp({
+        // Create user via admin API
+        const { data: authData, error: authError } = await admin.auth.admin.createUser({
             email: u.email,
             password: 'password123',
+            email_confirm: true,
         });
 
         if (authError || !authData.user) {
@@ -90,7 +96,8 @@ async function seed() {
         const userId = authData.user.id;
         console.log(`${u.email} created (${userId})`);
 
-        const { error: profileErr } = await supabase.from('users').insert({
+        // All inserts use admin client, bypass RLS
+        const { error: profileErr } = await admin.from('users').insert({
             user_id: userId,
             first_name: u.first_name,
             last_name: u.last_name,
@@ -100,7 +107,7 @@ async function seed() {
         console.log(`  profile: ${profileErr ? 'ERROR: ' + profileErr.message : 'OK'}`);
 
         for (const pref of u.preferences) {
-            const { error: prefErr } = await supabase.from('user_preferences').insert({
+            const { error: prefErr } = await admin.from('user_preferences').insert({
                 user_id: userId,
                 preference_name: pref.name,
                 preference_state: pref.state,
@@ -110,7 +117,7 @@ async function seed() {
         console.log(`  preferences: OK`);
 
         for (const recipe of u.recipes) {
-            const { error: recErr } = await supabase.from('recipes').insert({
+            const { error: recErr } = await admin.from('recipes').insert({
                 recipe_id: recipe.recipe_id,
                 user_id: userId,
                 recipe_name: recipe.recipe_name,
@@ -120,10 +127,9 @@ async function seed() {
             if (recErr) console.log(`  recipe ${recipe.recipe_name} ERROR: ${recErr.message}`);
         }
         console.log(`  recipes: OK`);
-
-        await supabase.auth.signOut();
     }
 
+    // Test sign-in with anon client to verify auth works
     const { error: testErr } = await supabase.auth.signInWithPassword({
         email: 'ashton@example.com',
         password: 'password123',

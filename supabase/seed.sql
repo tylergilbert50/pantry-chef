@@ -1,3 +1,5 @@
+DELETE FROM auth.users;
+
 -- Pantries
 INSERT INTO pantries (pantry_id, pantry_name, last_updated)
 VALUES

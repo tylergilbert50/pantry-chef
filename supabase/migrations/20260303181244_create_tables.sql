@@ -30,7 +30,7 @@ CREATE TABLE user_preferences (
     preference_id INT GENERATED ALWAYS AS IDENTITY,
     user_id UUID NOT NULL REFERENCES users(user_id),
     preference_name TEXT NOT NULL,
-    preference_state BOOLEAN NOT NULL,
+    preference_state TEXT,
 
     PRIMARY KEY (preference_id, user_id)
 );
