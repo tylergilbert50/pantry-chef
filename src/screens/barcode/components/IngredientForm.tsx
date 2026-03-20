@@ -31,9 +31,6 @@ export function IngredientForm({ product, onDone }: IngredientFormProps) {
   const pantryId = profile?.pantry_id;
 
   const [nameProduct, setNameProduct] = useState(product?.title ?? "");
-  const [nameNormalized, setNameNormalized] = useState(
-    product ? normalizeName(product.title) : "",
-  );
   const [category, setCategory] = useState(
     product ? mapAisleToCategory(product.aisle) : "",
   );
@@ -45,6 +42,10 @@ export function IngredientForm({ product, onDone }: IngredientFormProps) {
   const handleSave = async () => {
     if (!pantryId) {
       Alert.alert("Error", "No pantry found for your account.");
+      return;
+    }
+    if (!nameProduct.trim()) {
+      Alert.alert("Missing Info", "Product name is required.");
       return;
     }
     if (!category.trim()) {
@@ -65,7 +66,7 @@ export function IngredientForm({ product, onDone }: IngredientFormProps) {
 
     const ingredient: IngredientInsert = {
       pantry_id: pantryId,
-      name_normalized: nameNormalized.trim().toLowerCase(),
+      name_normalized: normalizeName(nameProduct),
       name_product: nameProduct.trim(),
       category: category.trim(),
       quantity: Number(quantity),
@@ -99,19 +100,8 @@ export function IngredientForm({ product, onDone }: IngredientFormProps) {
         <TextInput
           style={styles.fieldInput}
           value={nameProduct}
-          onChangeText={(text) => {
-            setNameProduct(text);
-            setNameNormalized(normalizeName(text));
-          }}
+          onChangeText={setNameProduct}
           placeholder="e.g. Barilla Penne"
-        />
-
-        <Text style={styles.fieldLabel}>Normalized Name</Text>
-        <TextInput
-          style={[styles.fieldInput, styles.fieldInputMuted]}
-          value={nameNormalized}
-          onChangeText={setNameNormalized}
-          placeholder="e.g. pasta"
         />
 
         <Text style={styles.fieldLabel}>Category</Text>
@@ -174,7 +164,7 @@ export function IngredientForm({ product, onDone }: IngredientFormProps) {
 
 const styles = StyleSheet.create({
   formContainer: { flex: 1, backgroundColor: colors.white },
-  formScroll: { padding: 24, paddingTop: 60 },
+  formScroll: { padding: 24, paddingTop: 100 },
   formTitle: {
     fontSize: 26,
     fontWeight: "700",
@@ -194,9 +184,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 14,
     fontSize: 16,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: colors.background,
   },
-  fieldInputMuted: { color: "#999" },
   row: { flexDirection: "row", gap: 12 },
   halfField: { flex: 1 },
   saveButton: {

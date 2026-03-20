@@ -4,6 +4,7 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { ActivityIndicator, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { UserProvider, useUser } from "../context/UserContext";
 import { SignInNavigator } from "./SignInNavigator";
 import { AppNavigator } from "./AppNavigator";
@@ -28,8 +29,10 @@ function RootLayout() {
 
 export function RootNavigator() {
   return (
-    <UserProvider>
-      <RootLayout />
-    </UserProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <UserProvider>
+        <RootLayout />
+      </UserProvider>
+    </GestureHandlerRootView>
   );
 }

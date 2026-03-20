@@ -1,5 +1,6 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
+import colors from "../../theme/colors";
 
 export function Recipes() {
   return <View style={styles.container}></View>;
@@ -8,7 +9,7 @@ export function Recipes() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.background,
     justifyContent: "center",
     alignItems: "center",
   },
