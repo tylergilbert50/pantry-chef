@@ -9,7 +9,7 @@ import {
 import { Camera, CameraView } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "../../theme/colors";
-import { lookupBarcode, SpoonacularProduct } from "./components/barcodeApi";
+import { lookupBarcode, SpoonacularProduct } from "./components/spoonacularApi";
 import { IngredientForm } from "./components/IngredientForm";
 
 const SCAN_BOX_WIDTH = 280;

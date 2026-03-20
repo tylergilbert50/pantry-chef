@@ -22,6 +22,8 @@ type IngredientCardProps = {
   onIncrease: () => void;
   onDecrease: () => void;
   onDelete: () => void;
+  onQuantityChange: (value: number) => void;
+  onPress: () => void;
 };
 
 export default function IngredientsCard({
@@ -33,6 +35,8 @@ export default function IngredientsCard({
   onIncrease,
   onDecrease,
   onDelete,
+  onQuantityChange,
+  onPress,
 }: IngredientCardProps) {
   const swipeableRef = useRef<Swipeable>(null);
 
@@ -75,15 +79,23 @@ export default function IngredientsCard({
       overshootRight={false}
       containerStyle={styles.swipeContainer}
     >
-      <View style={styles.card}>
-        {/* Left: Image */}
+      <TouchableOpacity
+        style={styles.card}
+        onPress={onPress}
+        activeOpacity={0.7}
+      >
         {image ? (
-          <Image source={{ uri: image }} style={styles.image} />
+          <Image
+            source={{ uri: image }}
+            style={styles.image}
+            resizeMode="contain"
+          />
         ) : (
-          <View style={styles.image} />
+          <View style={styles.imageFallback}>
+            <Ionicons name="nutrition-outline" size={28} color="#ccc" />
+          </View>
         )}
 
-        {/* Middle: Info */}
         <View style={styles.info}>
           <Text style={styles.name}>{name}</Text>
 
@@ -94,16 +106,18 @@ export default function IngredientsCard({
           {amount && <Text style={styles.subText}>{amount}</Text>}
         </View>
 
-        {/* Right: Stepper */}
         <QuantityStepper
           quantity={quantity}
           onIncrease={onIncrease}
           onDecrease={onDecrease}
+          onQuantityChange={onQuantityChange}
         />
-      </View>
+      </TouchableOpacity>
     </Swipeable>
   );
 }
+
+const IMAGE_SIZE = 55;
 
 const styles = StyleSheet.create({
   swipeContainer: {
@@ -123,11 +137,18 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   image: {
-    width: 60,
-    height: 60,
-    borderRadius: 16,
+    width: IMAGE_SIZE,
+    height: IMAGE_SIZE,
     marginRight: 12,
-    backgroundColor: colors.background,
+    marginLeft: 4,
+  },
+  imageFallback: {
+    width: IMAGE_SIZE,
+    height: IMAGE_SIZE,
+    marginRight: 12,
+    marginLeft: 4,
+    justifyContent: "center",
+    alignItems: "center",
   },
   info: {
     flex: 1,

@@ -4,6 +4,7 @@ export type IngredientInsert =
   Database["public"]["Tables"]["pantry_ingredients"]["Insert"];
 
 const SPOONACULAR_API_KEY = process.env.EXPO_PUBLIC_SPOONACULAR_API_KEY;
+const SPOONACULAR_CDN = "https://img.spoonacular.com/ingredients_250x250";
 
 export interface SpoonacularProduct {
   title: string;
@@ -77,4 +78,28 @@ export async function lookupBarcode(upc: string): Promise<SpoonacularProduct> {
     id: data.id,
     aisle: data.aisle,
   };
+}
+
+export async function searchIngredientImage(
+  name: string,
+): Promise<string | undefined> {
+  try {
+    const res = await fetch(
+      `https://api.spoonacular.com/food/ingredients/autocomplete?query=${encodeURIComponent(name)}&number=1&metaInformation=true&apiKey=${SPOONACULAR_API_KEY}`,
+    );
+    const data = await res.json();
+
+    if (!res.ok || !Array.isArray(data) || data.length === 0) {
+      return undefined;
+    }
+
+    const ingredient = data[0];
+    if (ingredient.image) {
+      return `${SPOONACULAR_CDN}/${ingredient.image}`;
+    }
+
+    return undefined;
+  } catch {
+    return undefined;
+  }
 }

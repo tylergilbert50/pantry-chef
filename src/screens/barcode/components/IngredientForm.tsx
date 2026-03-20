@@ -12,31 +12,50 @@ import {
   Platform,
 } from "react-native";
 import colors from "../../../theme/colors";
-import { addIngredient } from "../../../services/ingredientService";
+import {
+  addIngredient,
+  updateIngredient,
+} from "../../../services/ingredientService";
 import { useUser } from "../../../context/UserContext";
 import {
   normalizeName,
   SpoonacularProduct,
   IngredientInsert,
   mapAisleToCategory,
-} from "../components/barcodeApi";
+  searchIngredientImage,
+} from "../components/spoonacularApi";
+import { PantryIngredient } from "../../../services/pantryService";
 
 interface IngredientFormProps {
   product?: SpoonacularProduct | null;
+  existingIngredient?: PantryIngredient | null;
   onDone: () => void;
 }
 
-export function IngredientForm({ product, onDone }: IngredientFormProps) {
+export function IngredientForm({
+  product,
+  existingIngredient,
+  onDone,
+}: IngredientFormProps) {
   const { profile } = useUser();
   const pantryId = profile?.pantry_id;
 
-  const [nameProduct, setNameProduct] = useState(product?.title ?? "");
-  const [category, setCategory] = useState(
-    product ? mapAisleToCategory(product.aisle) : "",
+  const isEditing = !!existingIngredient;
+
+  const [nameProduct, setNameProduct] = useState(
+    existingIngredient?.name ?? product?.title ?? "",
   );
-  const [quantity, setQuantity] = useState("1");
-  const [unit, setUnit] = useState("");
-  const [expirationDate, setExpirationDate] = useState("");
+  const [category, setCategory] = useState(
+    existingIngredient?.category ??
+      (product ? mapAisleToCategory(product.aisle) : ""),
+  );
+  const [quantity, setQuantity] = useState(
+    existingIngredient ? String(existingIngredient.quantity) : "1",
+  );
+  const [unit, setUnit] = useState(existingIngredient?.unit ?? "");
+  const [expirationDate, setExpirationDate] = useState(
+    existingIngredient?.expirationDate ?? "",
+  );
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -64,27 +83,63 @@ export function IngredientForm({ product, onDone }: IngredientFormProps) {
       return;
     }
 
-    const ingredient: IngredientInsert = {
-      pantry_id: pantryId,
-      name_normalized: normalizeName(nameProduct),
-      name_product: nameProduct.trim(),
-      category: category.trim(),
-      quantity: Number(quantity),
-      unit: unit.trim().toLowerCase(),
-      expiration_date: expirationDate.trim() || null,
-      flag: null,
-    };
-
     setSaving(true);
-    const { error: saveError } = await addIngredient(ingredient);
-    setSaving(false);
 
-    if (saveError) {
-      Alert.alert("Error", saveError.message);
+    if (isEditing) {
+      const updates = {
+        name_product: nameProduct.trim(),
+        name_normalized: normalizeName(nameProduct),
+        category: category.trim(),
+        quantity: Number(quantity),
+        unit: unit.trim().toLowerCase(),
+        expiration_date: expirationDate.trim() || null,
+      };
+
+      const { error: updateError } = await updateIngredient(
+        Number(existingIngredient.id),
+        pantryId,
+        updates,
+      );
+      setSaving(false);
+
+      if (updateError) {
+        Alert.alert("Error", updateError.message);
+      } else {
+        Alert.alert("Updated!", `${nameProduct} has been updated.`, [
+          { text: "OK", onPress: onDone },
+        ]);
+      }
     } else {
-      Alert.alert("Added!", `${nameProduct} has been added to your pantry.`, [
-        { text: "Scan Another", onPress: onDone },
-      ]);
+      let imageUrl: string | null = product?.image ?? null;
+      if (!imageUrl) {
+        const searched = await searchIngredientImage(
+          normalizeName(nameProduct),
+        );
+        imageUrl = searched ?? null;
+      }
+
+      const ingredient: IngredientInsert = {
+        pantry_id: pantryId,
+        name_normalized: normalizeName(nameProduct),
+        name_product: nameProduct.trim(),
+        category: category.trim(),
+        quantity: Number(quantity),
+        unit: unit.trim().toLowerCase(),
+        expiration_date: expirationDate.trim() || null,
+        flag: null,
+        image: imageUrl,
+      };
+
+      const { error: saveError } = await addIngredient(ingredient);
+      setSaving(false);
+
+      if (saveError) {
+        Alert.alert("Error", saveError.message);
+      } else {
+        Alert.alert("Added!", `${nameProduct} has been added to your pantry.`, [
+          { text: "Scan Another", onPress: onDone },
+        ]);
+      }
     }
   };
 
@@ -94,7 +149,9 @@ export function IngredientForm({ product, onDone }: IngredientFormProps) {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView contentContainerStyle={styles.formScroll}>
-        <Text style={styles.formTitle}>Add to Pantry</Text>
+        <Text style={styles.formTitle}>
+          {isEditing ? "Edit Ingredient" : "Add to Pantry"}
+        </Text>
 
         <Text style={styles.fieldLabel}>Product Name</Text>
         <TextInput
@@ -102,6 +159,7 @@ export function IngredientForm({ product, onDone }: IngredientFormProps) {
           value={nameProduct}
           onChangeText={setNameProduct}
           placeholder="e.g. Barilla Penne"
+          placeholderTextColor="#888"
         />
 
         <Text style={styles.fieldLabel}>Category</Text>
@@ -110,6 +168,7 @@ export function IngredientForm({ product, onDone }: IngredientFormProps) {
           value={category}
           onChangeText={setCategory}
           placeholder="e.g. Grain, Protein, Dairy"
+          placeholderTextColor="#888"
         />
 
         <View style={styles.row}>
@@ -121,6 +180,7 @@ export function IngredientForm({ product, onDone }: IngredientFormProps) {
               onChangeText={setQuantity}
               keyboardType="numeric"
               placeholder="e.g. 2"
+              placeholderTextColor="#888"
             />
           </View>
           <View style={styles.halfField}>
@@ -130,6 +190,7 @@ export function IngredientForm({ product, onDone }: IngredientFormProps) {
               value={unit}
               onChangeText={setUnit}
               placeholder="e.g. lb, oz, count"
+              placeholderTextColor="#888"
             />
           </View>
         </View>
@@ -140,6 +201,7 @@ export function IngredientForm({ product, onDone }: IngredientFormProps) {
           value={expirationDate}
           onChangeText={setExpirationDate}
           placeholder="YYYY-MM-DD"
+          placeholderTextColor="#888"
         />
 
         <TouchableOpacity
@@ -150,7 +212,9 @@ export function IngredientForm({ product, onDone }: IngredientFormProps) {
           {saving ? (
             <ActivityIndicator color={colors.white} />
           ) : (
-            <Text style={styles.saveButtonText}>Add to Pantry</Text>
+            <Text style={styles.saveButtonText}>
+              {isEditing ? "Save Changes" : "Add to Pantry"}
+            </Text>
           )}
         </TouchableOpacity>
 
@@ -184,7 +248,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 14,
     fontSize: 16,
-    backgroundColor: colors.background,
+    backgroundColor: "#f9f9f9",
   },
   row: { flexDirection: "row", gap: 12 },
   halfField: { flex: 1 },

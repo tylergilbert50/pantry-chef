@@ -1,8 +1,15 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, StyleSheet, FlatList, RefreshControl } from "react-native";
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  RefreshControl,
+  Modal,
+} from "react-native";
 import colors from "../../theme/colors";
 import { PantrySearchBar } from "../pantry/components/SearchBar";
 import IngredientsCard from "../pantry/components/IngredientsCard";
+import { IngredientForm } from "../barcode/components/IngredientForm";
 import {
   getPantryIngredients,
   PantryIngredient,
@@ -21,6 +28,7 @@ export function Pantry() {
   const [search, setSearch] = useState("");
   const [ingredients, setIngredients] = useState<PantryIngredient[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [editingItem, setEditingItem] = useState<PantryIngredient | null>(null);
 
   const fetchIngredients = useCallback(async () => {
     if (!pantryId) return;
@@ -28,10 +36,12 @@ export function Pantry() {
     setIngredients(data);
   }, [pantryId]);
 
+  // Initial fetch
   useEffect(() => {
     fetchIngredients();
   }, [fetchIngredients]);
 
+  // Real-time subscription — auto-refreshes when rows are inserted, updated, or deleted
   useEffect(() => {
     if (!pantryId) return;
 
@@ -56,6 +66,7 @@ export function Pantry() {
     };
   }, [pantryId, fetchIngredients]);
 
+  // Pull-to-refresh handler
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await fetchIngredients();
@@ -67,6 +78,20 @@ export function Pantry() {
     if (!current || !pantryId) return;
 
     const newQuantity = Math.max(1, current.quantity + change);
+
+    setIngredients((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, quantity: newQuantity } : item,
+      ),
+    );
+
+    await updateIngredient(Number(id), pantryId, { quantity: newQuantity });
+  };
+
+  const setQuantity = async (id: string, value: number) => {
+    if (!pantryId) return;
+
+    const newQuantity = Math.max(1, value);
 
     setIngredients((prev) =>
       prev.map((item) =>
@@ -90,6 +115,11 @@ export function Pantry() {
     }
   };
 
+  const handleEditDone = () => {
+    setEditingItem(null);
+    fetchIngredients();
+  };
+
   const filtered = ingredients.filter((item) =>
     item.name.toLowerCase().includes(search.toLowerCase()),
   );
@@ -110,6 +140,7 @@ export function Pantry() {
         data={filtered}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
+        keyboardShouldPersistTaps="handled"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -129,9 +160,23 @@ export function Pantry() {
             onIncrease={() => updateQuantity(item.id, 1)}
             onDecrease={() => updateQuantity(item.id, -1)}
             onDelete={() => handleDelete(item.id)}
+            onQuantityChange={(value) => setQuantity(item.id, value)}
+            onPress={() => setEditingItem(item)}
           />
         )}
       />
+
+      <Modal
+        visible={!!editingItem}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setEditingItem(null)}
+      >
+        <IngredientForm
+          existingIngredient={editingItem}
+          onDone={handleEditDone}
+        />
+      </Modal>
     </View>
   );
 }
