@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   StyleSheet,
@@ -9,6 +9,11 @@ import {
 import colors from "../../theme/colors";
 import { PantrySearchBar } from "../pantry/components/SearchBar";
 import IngredientsCard from "../pantry/components/IngredientsCard";
+import {
+  EditModeBar,
+  DeleteBar,
+  useEditMode,
+} from "../pantry/components/EditMode";
 import { IngredientForm } from "../barcode/components/IngredientForm";
 import {
   getPantryIngredients,
@@ -23,12 +28,13 @@ import { supabase } from "../../lib/supabase";
 
 export function Pantry() {
   const { profile } = useUser();
-  const pantryId = profile?.pantry_id;
+  const pantryId: string | undefined = profile?.pantry_id ?? undefined;
 
   const [search, setSearch] = useState("");
   const [ingredients, setIngredients] = useState<PantryIngredient[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [editingItem, setEditingItem] = useState<PantryIngredient | null>(null);
+  const openSwipeable = useRef<(() => void) | null>(null);
 
   const fetchIngredients = useCallback(async () => {
     if (!pantryId) return;
@@ -36,12 +42,15 @@ export function Pantry() {
     setIngredients(data);
   }, [pantryId]);
 
-  // Initial fetch
+  const editMode = useEditMode({
+    pantryId,
+    onDeleteComplete: fetchIngredients,
+  });
+
   useEffect(() => {
     fetchIngredients();
   }, [fetchIngredients]);
 
-  // Real-time subscription — auto-refreshes when rows are inserted, updated, or deleted
   useEffect(() => {
     if (!pantryId) return;
 
@@ -66,7 +75,6 @@ export function Pantry() {
     };
   }, [pantryId, fetchIngredients]);
 
-  // Pull-to-refresh handler
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await fetchIngredients();
@@ -105,13 +113,20 @@ export function Pantry() {
   const handleDelete = async (id: string) => {
     if (!pantryId) return;
 
-    // Optimistic removal
     setIngredients((prev) => prev.filter((item) => item.id !== id));
 
     const { error } = await deleteIngredient(Number(id), pantryId);
     if (error) {
-      // Revert on failure
       await fetchIngredients();
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    const idsToDelete = await editMode.bulkDelete();
+    if (idsToDelete) {
+      setIngredients((prev) =>
+        prev.filter((item) => !idsToDelete.includes(item.id)),
+      );
     }
   };
 
@@ -136,6 +151,16 @@ export function Pantry() {
         />
       </View>
 
+      <View style={styles.topSpacer} />
+
+      <EditModeBar
+        active={editMode.active}
+        isAllSelected={editMode.isAllSelected(filtered.length)}
+        onEnter={editMode.enter}
+        onExit={editMode.exit}
+        onSelectAll={() => editMode.selectAll(filtered.map((i) => i.id))}
+      />
+
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.id}
@@ -154,17 +179,34 @@ export function Pantry() {
           <IngredientsCard
             name={item.name}
             calories={item.calories}
-            amount={item.amount}
+            unit={item.unit}
             quantity={item.quantity}
             image={item.image}
+            selectMode={editMode.active}
+            selected={editMode.selectedIds.has(item.id)}
             onIncrease={() => updateQuantity(item.id, 1)}
             onDecrease={() => updateQuantity(item.id, -1)}
             onDelete={() => handleDelete(item.id)}
             onQuantityChange={(value) => setQuantity(item.id, value)}
-            onPress={() => setEditingItem(item)}
+            onPress={
+              editMode.active
+                ? () => editMode.toggle(item.id)
+                : () => setEditingItem(item)
+            }
+            onSwipeOpen={(close) => {
+              openSwipeable.current?.();
+              openSwipeable.current = close;
+            }}
           />
         )}
       />
+
+      {editMode.active && (
+        <DeleteBar
+          selectedCount={editMode.selectedIds.size}
+          onBulkDelete={handleBulkDelete}
+        />
+      )}
 
       <Modal
         visible={!!editingItem}
@@ -203,8 +245,10 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     zIndex: 10,
   },
+  topSpacer: {
+    height: 140,
+  },
   listContent: {
-    paddingTop: 150,
     paddingBottom: 40,
   },
 });

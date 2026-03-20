@@ -62,7 +62,6 @@ async function backfillImages(
 
         item.image = imageUrl;
       }
-    } catch {
-    }
+    } catch {}
   }
 }

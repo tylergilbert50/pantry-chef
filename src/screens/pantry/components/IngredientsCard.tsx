@@ -15,34 +15,44 @@ import QuantityStepper from "./QuantityStepper";
 type IngredientCardProps = {
   name: string;
   quantity: number;
-  amount?: string;
+  unit?: string;
   calories?: number;
   image?: string;
+  selectMode?: boolean;
+  selected?: boolean;
 
   onIncrease: () => void;
   onDecrease: () => void;
   onDelete: () => void;
   onQuantityChange: (value: number) => void;
   onPress: () => void;
+  onSwipeOpen?: (close: () => void) => void;
 };
 
 export default function IngredientsCard({
   name,
   calories,
-  amount,
+  unit,
   quantity,
   image,
+  selectMode = false,
+  selected = false,
   onIncrease,
   onDecrease,
   onDelete,
   onQuantityChange,
   onPress,
+  onSwipeOpen,
 }: IngredientCardProps) {
   const swipeableRef = useRef<Swipeable>(null);
 
   const handleDelete = () => {
     swipeableRef.current?.close();
     onDelete();
+  };
+
+  const handleSwipeOpen = () => {
+    onSwipeOpen?.(() => swipeableRef.current?.close());
   };
 
   const renderRightActions = (
@@ -71,6 +81,55 @@ export default function IngredientsCard({
     );
   };
 
+  const cardContent = (
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+      {selectMode && (
+        <View style={styles.checkboxContainer}>
+          <Ionicons
+            name={selected ? "checkmark-circle" : "ellipse-outline"}
+            size={24}
+            color={selected ? colors.primary : "#ccc"}
+          />
+        </View>
+      )}
+
+      {image ? (
+        <Image
+          source={{ uri: image }}
+          style={styles.image}
+          resizeMode="contain"
+        />
+      ) : (
+        <View style={styles.imageFallback}>
+          <Ionicons name="nutrition-outline" size={28} color="#ccc" />
+        </View>
+      )}
+
+      <View style={styles.info}>
+        <Text style={styles.name}>{name}</Text>
+
+        {unit ? <Text style={styles.subText}>{unit}</Text> : null}
+
+        {calories !== undefined && (
+          <Text style={styles.subText}>{calories} Calories</Text>
+        )}
+      </View>
+
+      {!selectMode && (
+        <QuantityStepper
+          quantity={quantity}
+          onIncrease={onIncrease}
+          onDecrease={onDecrease}
+          onQuantityChange={onQuantityChange}
+        />
+      )}
+    </TouchableOpacity>
+  );
+
+  if (selectMode) {
+    return <View style={styles.swipeContainer}>{cardContent}</View>;
+  }
+
   return (
     <Swipeable
       ref={swipeableRef}
@@ -78,41 +137,9 @@ export default function IngredientsCard({
       rightThreshold={80}
       overshootRight={false}
       containerStyle={styles.swipeContainer}
+      onSwipeableWillOpen={handleSwipeOpen}
     >
-      <TouchableOpacity
-        style={styles.card}
-        onPress={onPress}
-        activeOpacity={0.7}
-      >
-        {image ? (
-          <Image
-            source={{ uri: image }}
-            style={styles.image}
-            resizeMode="contain"
-          />
-        ) : (
-          <View style={styles.imageFallback}>
-            <Ionicons name="nutrition-outline" size={28} color="#ccc" />
-          </View>
-        )}
-
-        <View style={styles.info}>
-          <Text style={styles.name}>{name}</Text>
-
-          {calories !== undefined && (
-            <Text style={styles.subText}>{calories} Calories</Text>
-          )}
-
-          {amount && <Text style={styles.subText}>{amount}</Text>}
-        </View>
-
-        <QuantityStepper
-          quantity={quantity}
-          onIncrease={onIncrease}
-          onDecrease={onDecrease}
-          onQuantityChange={onQuantityChange}
-        />
-      </TouchableOpacity>
+      {cardContent}
     </Swipeable>
   );
 }
@@ -136,17 +163,18 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 3,
   },
+  checkboxContainer: {
+    marginRight: 10,
+  },
   image: {
     width: IMAGE_SIZE,
     height: IMAGE_SIZE,
     marginRight: 12,
-    marginLeft: 4,
   },
   imageFallback: {
     width: IMAGE_SIZE,
     height: IMAGE_SIZE,
     marginRight: 12,
-    marginLeft: 4,
     justifyContent: "center",
     alignItems: "center",
   },
