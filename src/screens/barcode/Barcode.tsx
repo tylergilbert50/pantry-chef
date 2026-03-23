@@ -8,6 +8,8 @@ import {
 } from "react-native";
 import { Camera, CameraView } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
+import { useIsFocused } from "@react-navigation/native";
 import colors from "../../theme/colors";
 import { lookupBarcode, SpoonacularProduct } from "./components/spoonacularApi";
 import { IngredientForm } from "./components/IngredientForm";
@@ -16,6 +18,8 @@ const SCAN_BOX_WIDTH = 280;
 const SCAN_BOX_HEIGHT = 160;
 
 export function Barcode() {
+  const isFocused = useIsFocused();
+
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scannedValue, setScannedValue] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -63,16 +67,20 @@ export function Barcode() {
         <Text>Requesting camera permission...</Text>
       </View>
     );
+
   if (!hasPermission)
     return (
       <View style={styles.center}>
         <Text>No access to camera</Text>
       </View>
     );
+
   if (showForm) return <IngredientForm product={product} onDone={resetScan} />;
 
   return (
     <View style={styles.container}>
+      {isFocused && <StatusBar style="light" translucent />}
+
       <CameraView
         style={StyleSheet.absoluteFillObject}
         facing="back"
@@ -111,20 +119,9 @@ export function Barcode() {
       {scannedValue && error && (
         <View style={styles.resultContainer}>
           <Text style={styles.errorText}>{error}</Text>
-          <View style={styles.resultActions}>
-            <TouchableOpacity
-              style={styles.scanAgainButton}
-              onPress={resetScan}
-            >
-              <Text style={styles.scanAgainText}>Scan Again</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.manualAddButton}
-              onPress={openManualForm}
-            >
-              <Text style={styles.scanAgainText}>Add Manually</Text>
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity style={styles.scanAgainButton} onPress={resetScan}>
+            <Text style={styles.scanAgainText}>Scan Again</Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -187,17 +184,11 @@ const styles = StyleSheet.create({
   },
   lookupText: { fontSize: 14, color: "gray", marginTop: 8 },
   errorText: { fontSize: 14, color: "red", textAlign: "center" },
-  resultActions: { flexDirection: "row", gap: 10, marginTop: 12 },
   scanAgainButton: {
+    marginTop: 12,
     paddingVertical: 8,
     paddingHorizontal: 16,
     backgroundColor: colors.secondary,
-    borderRadius: 20,
-  },
-  manualAddButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: colors.primary,
     borderRadius: 20,
   },
   scanAgainText: { color: colors.white, fontSize: 14, fontWeight: "600" },

@@ -6,7 +6,9 @@ import {
   RefreshControl,
   Modal,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import colors from "../../theme/colors";
+
 import { PantrySearchBar } from "../pantry/components/SearchBar";
 import IngredientsCard from "../pantry/components/IngredientsCard";
 import {
@@ -15,6 +17,7 @@ import {
   useEditMode,
 } from "../pantry/components/EditMode";
 import { IngredientForm } from "../barcode/components/IngredientForm";
+
 import {
   getPantryIngredients,
   PantryIngredient,
@@ -23,6 +26,7 @@ import {
   updateIngredient,
   deleteIngredient,
 } from "../../services/ingredientService";
+
 import { useUser } from "../../context/UserContext";
 import { supabase } from "../../lib/supabase";
 
@@ -34,6 +38,8 @@ export function Pantry() {
   const [ingredients, setIngredients] = useState<PantryIngredient[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [editingItem, setEditingItem] = useState<PantryIngredient | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
   const openSwipeable = useRef<(() => void) | null>(null);
 
   const fetchIngredients = useCallback(async () => {
@@ -42,14 +48,15 @@ export function Pantry() {
     setIngredients(data);
   }, [pantryId]);
 
-  const editMode = useEditMode({
-    pantryId,
-    onDeleteComplete: fetchIngredients,
-  });
-
   useEffect(() => {
     fetchIngredients();
   }, [fetchIngredients]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchIngredients();
+    }, [fetchIngredients]),
+  );
 
   useEffect(() => {
     if (!pantryId) return;
@@ -81,6 +88,11 @@ export function Pantry() {
     setRefreshing(false);
   }, [fetchIngredients]);
 
+  const editMode = useEditMode({
+    pantryId,
+    onDeleteComplete: fetchIngredients,
+  });
+
   const updateQuantity = async (id: string, change: number) => {
     const current = ingredients.find((item) => item.id === id);
     if (!current || !pantryId) return;
@@ -93,7 +105,9 @@ export function Pantry() {
       ),
     );
 
-    await updateIngredient(Number(id), pantryId, { quantity: newQuantity });
+    await updateIngredient(Number(id), pantryId, {
+      quantity: newQuantity,
+    });
   };
 
   const setQuantity = async (id: string, value: number) => {
@@ -107,7 +121,9 @@ export function Pantry() {
       ),
     );
 
-    await updateIngredient(Number(id), pantryId, { quantity: newQuantity });
+    await updateIngredient(Number(id), pantryId, {
+      quantity: newQuantity,
+    });
   };
 
   const handleDelete = async (id: string) => {
@@ -116,6 +132,7 @@ export function Pantry() {
     setIngredients((prev) => prev.filter((item) => item.id !== id));
 
     const { error } = await deleteIngredient(Number(id), pantryId);
+
     if (error) {
       await fetchIngredients();
     }
@@ -123,6 +140,7 @@ export function Pantry() {
 
   const handleBulkDelete = async () => {
     const idsToDelete = await editMode.bulkDelete();
+
     if (idsToDelete) {
       setIngredients((prev) =>
         prev.filter((item) => !idsToDelete.includes(item.id)),
@@ -135,9 +153,13 @@ export function Pantry() {
     fetchIngredients();
   };
 
-  const filtered = ingredients.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = ingredients
+    .filter((item) => item.name.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) =>
+      sortOrder === "asc"
+        ? a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
+        : b.name.localeCompare(a.name, undefined, { sensitivity: "base" }),
+    );
 
   return (
     <View style={styles.container}>
@@ -147,7 +169,9 @@ export function Pantry() {
         <PantrySearchBar
           value={search}
           onChange={setSearch}
-          onFilterPress={() => console.log("filter")}
+          onFilterPress={() =>
+            setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"))
+          }
         />
       </View>
 
