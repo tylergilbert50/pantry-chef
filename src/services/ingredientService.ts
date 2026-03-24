@@ -1,7 +1,6 @@
 import { supabase } from '../lib/supabaseClient';
 import { Database } from '../../types/database.types';
 
-type Ingredient = Database['public']['Tables']['pantry_ingredients']['Row'];
 type IngredientInsert = Database['public']['Tables']['pantry_ingredients']['Insert'];
 type IngredientUpdate = Database['public']['Tables']['pantry_ingredients']['Update'];
 
