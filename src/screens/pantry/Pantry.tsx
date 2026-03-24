@@ -19,12 +19,10 @@ import {
 import { IngredientForm } from "../barcode/components/IngredientForm";
 
 import {
-  getPantryIngredients,
-  PantryIngredient,
-} from "../../services/pantryService";
-import {
+  getIngredients,
   updateIngredient,
   deleteIngredient,
+  backfillImages,
 } from "../../services/ingredientService";
 
 import { useUser } from "../../context/UserContext";
@@ -35,16 +33,23 @@ export function Pantry() {
   const pantryId: string | undefined = profile?.pantry_id ?? undefined;
 
   const [search, setSearch] = useState("");
-  const [ingredients, setIngredients] = useState<PantryIngredient[]>([]);
+  const [ingredients, setIngredients] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [editingItem, setEditingItem] = useState<PantryIngredient | null>(null);
+  const [editingItem, setEditingItem] = useState<any | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   const openSwipeable = useRef<(() => void) | null>(null);
 
   const fetchIngredients = useCallback(async () => {
     if (!pantryId) return;
-    const data = await getPantryIngredients(pantryId);
+    const { data, error } = await getIngredients(pantryId);
+
+    if (error || !data) {
+      console.error("Fetch error:", error);
+      return;
+    }
+
+    backfillImages(data, pantryId);
     setIngredients(data);
   }, [pantryId]);
 
@@ -93,45 +98,45 @@ export function Pantry() {
     onDeleteComplete: fetchIngredients,
   });
 
-  const updateQuantity = async (id: string, change: number) => {
-    const current = ingredients.find((item) => item.id === id);
+  const updateQuantity = async (id: number, change: number) => {
+    const current = ingredients.find((item) => item.ingredient_id === id);
     if (!current || !pantryId) return;
 
     const newQuantity = Math.max(1, current.quantity + change);
 
     setIngredients((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, quantity: newQuantity } : item,
+        item.ingredient_id === id ? { ...item, quantity: newQuantity } : item,
       ),
     );
 
-    await updateIngredient(Number(id), pantryId, {
+    await updateIngredient(id, pantryId, {
       quantity: newQuantity,
     });
   };
 
-  const setQuantity = async (id: string, value: number) => {
+  const setQuantity = async (id: number, value: number) => {
     if (!pantryId) return;
 
     const newQuantity = Math.max(1, value);
 
     setIngredients((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, quantity: newQuantity } : item,
+        item.ingredient_id === id ? { ...item, quantity: newQuantity } : item,
       ),
     );
 
-    await updateIngredient(Number(id), pantryId, {
+    await updateIngredient(id, pantryId, {
       quantity: newQuantity,
     });
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (!pantryId) return;
 
-    setIngredients((prev) => prev.filter((item) => item.id !== id));
+    setIngredients((prev) => prev.filter((item) => item.ingredient_id !== id));
 
-    const { error } = await deleteIngredient(Number(id), pantryId);
+    const { error } = await deleteIngredient(id, pantryId);
 
     if (error) {
       await fetchIngredients();
@@ -143,7 +148,9 @@ export function Pantry() {
 
     if (idsToDelete) {
       setIngredients((prev) =>
-        prev.filter((item) => !idsToDelete.includes(item.id)),
+        prev.filter(
+          (item) => !idsToDelete.includes(String(item.ingredient_id)),
+        ),
       );
     }
   };
@@ -154,11 +161,17 @@ export function Pantry() {
   };
 
   const filtered = ingredients
-    .filter((item) => item.name.toLowerCase().includes(search.toLowerCase()))
+    .filter((item) =>
+      item.name_product.toLowerCase().includes(search.toLowerCase()),
+    )
     .sort((a, b) =>
       sortOrder === "asc"
-        ? a.name.localeCompare(b.name, undefined, { sensitivity: "base" })
-        : b.name.localeCompare(a.name, undefined, { sensitivity: "base" }),
+        ? a.name_product.localeCompare(b.name_product, undefined, {
+            sensitivity: "base",
+          })
+        : b.name_product.localeCompare(a.name_product, undefined, {
+            sensitivity: "base",
+          }),
     );
 
   return (
@@ -182,12 +195,14 @@ export function Pantry() {
         isAllSelected={editMode.isAllSelected(filtered.length)}
         onEnter={editMode.enter}
         onExit={editMode.exit}
-        onSelectAll={() => editMode.selectAll(filtered.map((i) => i.id))}
+        onSelectAll={() =>
+          editMode.selectAll(filtered.map((i) => String(i.ingredient_id)))
+        }
       />
 
       <FlatList
         data={filtered}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => String(item.ingredient_id)}
         contentContainerStyle={styles.listContent}
         keyboardShouldPersistTaps="handled"
         refreshControl={
@@ -201,20 +216,19 @@ export function Pantry() {
         }
         renderItem={({ item }) => (
           <IngredientsCard
-            name={item.name}
-            calories={item.calories}
+            name={item.name_product}
             unit={item.unit}
             quantity={item.quantity}
             image={item.image}
             selectMode={editMode.active}
-            selected={editMode.selectedIds.has(item.id)}
-            onIncrease={() => updateQuantity(item.id, 1)}
-            onDecrease={() => updateQuantity(item.id, -1)}
-            onDelete={() => handleDelete(item.id)}
-            onQuantityChange={(value) => setQuantity(item.id, value)}
+            selected={editMode.selectedIds.has(String(item.ingredient_id))}
+            onIncrease={() => updateQuantity(item.ingredient_id, 1)}
+            onDecrease={() => updateQuantity(item.ingredient_id, -1)}
+            onDelete={() => handleDelete(item.ingredient_id)}
+            onQuantityChange={(value) => setQuantity(item.ingredient_id, value)}
             onPress={
               editMode.active
-                ? () => editMode.toggle(item.id)
+                ? () => editMode.toggle(String(item.ingredient_id))
                 : () => setEditingItem(item)
             }
             onSwipeOpen={(close) => {

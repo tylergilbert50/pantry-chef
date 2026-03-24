@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../lib/supabase';
 
 // no addPreference(); use a trigger on sign up which inserts default rows into preferences
 export const getPreferences = async (user_id: string) => { ... };
