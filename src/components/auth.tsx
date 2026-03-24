@@ -7,165 +7,139 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
-// import {
-//   GoogleSignin,
-//   GoogleSigninButton,
-//   statusCodes,
-// } from "@react-native-google-signin/google-signin";
-import { signIn, signUp } from "../services/authService";
+import { supabase } from "../lib/supabase";
 import colors from "../theme/colors";
 
-
-type Props = {
+type AuthProps = {
   onForgot: () => void;
   onRegister: () => void;
 };
 
-export default function Auth({ onForgot, onRegister }: Props) {
+export function Auth({ onForgot, onRegister }: AuthProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
   async function signInWithEmail() {
     setLoading(true);
-    const { error } = await signIn(email, password);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    if (error) Alert.alert(error.message);
+    if (error) Alert.alert("Sign In Error", error.message);
     setLoading(false);
   }
 
   return (
-    <View>
-      <View>
+    <View style={styles.container}>
+      <View style={styles.inputGroup}>
         <Text style={styles.label}>Email</Text>
         <TextInput
-          onChangeText={(text) => setEmail(text)}
+          onChangeText={setEmail}
           value={email}
-          placeholder="Enter your email"
+          placeholder="Email"
+          placeholderTextColor="#999"
           autoCapitalize="none"
-          style={styles.input}
-          underlineColorAndroid="transparent"
           keyboardType="email-address"
-          autoCorrect={false}
-          textContentType="emailAddress"
-          autoComplete="email"
-          returnKeyType="next"
+          style={styles.input}
         />
       </View>
-      <View>
+
+      <View style={styles.inputGroup}>
         <Text style={styles.label}>Password</Text>
-        <View style={styles.passwordContainer}>
-          <TextInput
-            onChangeText={(text) => setPassword(text)}
-            value={password}
-            secureTextEntry={!showPassword}
-            placeholder="Enter your password"
-            autoCapitalize="none"
-            style={[styles.input, { flex: 1 }]}
-            underlineColorAndroid="transparent"
-          />
-          <TouchableOpacity
-            onPress={() => setShowPassword(!showPassword)}
-            style={styles.toggleButton}
-          >
-            <Text style={styles.toggleText}>
-              {showPassword ? "Hide" : "Show"}
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <TextInput
+          onChangeText={setPassword}
+          value={password}
+          secureTextEntry
+          placeholder="Password"
+          placeholderTextColor="#999"
+          autoCapitalize="none"
+          style={styles.input}
+        />
       </View>
-      <TouchableOpacity onPress={onForgot} style={styles.forgotPassword}>
-        <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+
+      <TouchableOpacity onPress={onForgot} style={styles.forgotButton}>
+        <Text style={styles.forgotText}>Forgot password?</Text>
       </TouchableOpacity>
-      <View>
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={() => signInWithEmail()}
-          disabled={loading}
-        >
-          <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.registerContainer}>
-        <Text style={styles.registerText}>
-          Don't have an account yet?{" "}
-          <Text style={styles.registerLink} onPress={onRegister}>
-            Register here
-          </Text>
+
+      <TouchableOpacity
+        style={[styles.signInButton, loading && styles.buttonDisabled]}
+        onPress={signInWithEmail}
+        disabled={loading}
+      >
+        <Text style={styles.signInButtonText}>
+          {loading ? "Signing in..." : "Sign In"}
         </Text>
+      </TouchableOpacity>
+
+      <View style={styles.registerRow}>
+        <Text style={styles.registerText}>Don't have an account? </Text>
+        <TouchableOpacity onPress={onRegister}>
+          <Text style={styles.registerLink}>Sign Up</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    width: "100%",
+    paddingHorizontal: 30,
+    marginTop: 20,
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
   label: {
-    fontSize: 18,
-    fontWeight: "500",
-    color: "Black",
-    marginBottom: 6,
-    marginTop: 40,
-  },
-  input: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#ADADAD",
-    fontFamily: "Montserrat_400",
-    paddingHorizontal: 0,
-    padding: 12,
-    fontSize: 16,
-    marginBottom: -10,
-  },
-  passwordContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    position: "relative",
-  },
-  toggleButton: {
-    position: "absolute",
-    right: 0,
-    bottom: 4,
-  },
-  toggleText: {
-    color: colors.secondary,
     fontSize: 14,
     fontWeight: "600",
+    color: "#555",
+    marginBottom: 6,
   },
-  button: {
-    backgroundColor: colors.secondary,
-    borderRadius: 50,
-    padding: 12,
+  input: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 10,
+    padding: 14,
+    fontSize: 16,
+    backgroundColor: "#f9f9f9",
+  },
+  forgotButton: {
+    alignSelf: "center",
+    marginBottom: 24,
+  },
+  forgotText: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  signInButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    padding: 16,
     alignItems: "center",
-    marginTop: 45,
-    width: 315,
   },
   buttonDisabled: {
     opacity: 0.5,
   },
-  buttonText: {
-    color: colors.white,
-    fontSize: 18,
+  signInButtonText: {
+    color: "#fff",
+    fontSize: 17,
     fontWeight: "700",
   },
-  forgotPassword: {
-    alignSelf: "center",
-    marginTop: 25,
-  },
-  forgotPasswordText: {
-    fontSize: 14,
-    color: "#8A8A8A",
-    fontFamily: "Montserrat_400",
-  },
-  registerContainer: {
-    marginTop: 25,
-    alignItems: "center",
+  registerRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 24,
   },
   registerText: {
-    fontSize: 16,
-    fontFamily: "Montserrat_400",
+    color: "#777",
+    fontSize: 14,
   },
   registerLink: {
-    color: colors.secondary,
-    fontWeight: "600",
+    color: colors.primary,
+    fontSize: 14,
+    fontWeight: "700",
   },
 });

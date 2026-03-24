@@ -5,12 +5,12 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { SignInStackParamList } from "../../navigation/SignInNavigator";
 import colors from "../../theme/colors";
 
-// The styling looks a bit off right now, but it'll come together once we add the Google sign-in button at the end.
+type NavigationProp = NativeStackNavigationProp<
+  SignInStackParamList,
+  "Landing"
+>;
 
-type NavigationProp = NativeStackNavigationProp<SignInStackParamList, "SignIn">;
-
-export const SignIn: React.FC = () => {
-  // Accesses stack navigation for moving to other screens
+export const Landing: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
 
   return (
@@ -44,6 +44,7 @@ export const SignIn: React.FC = () => {
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -71,7 +72,7 @@ const styles = StyleSheet.create({
   },
   bottomWrapper: {
     position: "absolute",
-    bottom: "28%",
+    bottom: "25%",
     alignItems: "center",
     alignSelf: "center",
   },

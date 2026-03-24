@@ -3,16 +3,12 @@
 
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { SignIn } from "../screens/sign-in/SignIn";
-import { SignInWithEmail } from "../screens/sign-in/SignInWithEmail";
-import { ForgotPassword } from "../screens/sign-in/ForgotPassword";
-import { Register } from "../screens/sign-in/Register";
+import { Landing } from "../screens/sign-in/Landing";
+import { SignInWithEmail } from "../screens/sign-in/components/SignInWithEmail";
 
 export type SignInStackParamList = {
-  SignIn: undefined;
+  Landing: undefined;
   SignInWithEmail: undefined;
-  ForgotPassword: undefined;
-  Register: undefined;
 };
 
 const Stack = createNativeStackNavigator<SignInStackParamList>();
@@ -21,8 +17,8 @@ export function SignInNavigator() {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="SignIn"
-        component={SignIn}
+        name="Landing"
+        component={Landing}
         options={{ headerShown: false }}
       />
       <Stack.Screen
@@ -30,20 +26,6 @@ export function SignInNavigator() {
         component={SignInWithEmail}
         options={{
           presentation: "modal",
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="ForgotPassword"
-        component={ForgotPassword}
-        options={{
-          headerShown: false,
-        }}
-      />
-      <Stack.Screen
-        name="Register"
-        component={Register}
-        options={{
           headerShown: false,
         }}
       />
