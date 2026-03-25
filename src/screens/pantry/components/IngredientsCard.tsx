@@ -10,12 +10,13 @@ import {
 import { Swipeable } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "../../../theme/colors";
-import QuantityStepper from "./QuantityStepper";
+import QuantityStepper from "./CountStepper";
 
 type IngredientCardProps = {
   name: string;
   quantity: number;
   unit?: string;
+  itemCount: number;
   calories?: number;
   image?: string;
   selectMode?: boolean;
@@ -24,7 +25,7 @@ type IngredientCardProps = {
   onIncrease: () => void;
   onDecrease: () => void;
   onDelete: () => void;
-  onQuantityChange: (value: number) => void;
+  onItemCountChange: (value: number) => void;
   onPress: () => void;
   onSwipeOpen?: (close: () => void) => void;
 };
@@ -34,13 +35,14 @@ export default function IngredientsCard({
   calories,
   unit,
   quantity,
+  itemCount,
   image,
   selectMode = false,
   selected = false,
   onIncrease,
   onDecrease,
   onDelete,
-  onQuantityChange,
+  onItemCountChange,
   onPress,
   onSwipeOpen,
 }: IngredientCardProps) {
@@ -108,7 +110,11 @@ export default function IngredientsCard({
       <View style={styles.info}>
         <Text style={styles.name}>{name}</Text>
 
-        {unit ? <Text style={styles.subText}>{unit}</Text> : null}
+        {unit ? (
+          <Text style={styles.subText}>
+            {quantity} {unit}
+          </Text>
+        ) : null}
 
         {calories !== undefined && (
           <Text style={styles.subText}>{calories} Calories</Text>
@@ -117,10 +123,10 @@ export default function IngredientsCard({
 
       {!selectMode && (
         <QuantityStepper
-          quantity={quantity}
+          quantity={itemCount}
           onIncrease={onIncrease}
           onDecrease={onDecrease}
-          onQuantityChange={onQuantityChange}
+          onQuantityChange={onItemCountChange}
         />
       )}
     </TouchableOpacity>

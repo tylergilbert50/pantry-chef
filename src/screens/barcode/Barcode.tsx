@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
+  Modal,
 } from "react-native";
 import { Camera, CameraView } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
@@ -75,8 +76,6 @@ export function Barcode() {
       </View>
     );
 
-  if (showForm) return <IngredientForm product={product} onDone={resetScan} />;
-
   return (
     <View style={styles.container}>
       {isFocused && <StatusBar style="light" translucent />}
@@ -124,6 +123,15 @@ export function Barcode() {
           </TouchableOpacity>
         </View>
       )}
+
+      <Modal
+        visible={showForm}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={resetScan}
+      >
+        <IngredientForm product={product} onDone={resetScan} />
+      </Modal>
     </View>
   );
 }

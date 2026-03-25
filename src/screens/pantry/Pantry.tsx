@@ -98,36 +98,36 @@ export function Pantry() {
     onDeleteComplete: fetchIngredients,
   });
 
-  const updateQuantity = async (id: number, change: number) => {
+  const updateItemCount = async (id: number, change: number) => {
     const current = ingredients.find((item) => item.ingredient_id === id);
     if (!current || !pantryId) return;
 
-    const newQuantity = Math.max(1, current.quantity + change);
+    const newCount = Math.max(1, (current.item_count ?? 1) + change);
 
     setIngredients((prev) =>
       prev.map((item) =>
-        item.ingredient_id === id ? { ...item, quantity: newQuantity } : item,
+        item.ingredient_id === id ? { ...item, item_count: newCount } : item,
       ),
     );
 
     await updateIngredient(id, pantryId, {
-      quantity: newQuantity,
+      item_count: newCount,
     });
   };
 
-  const setQuantity = async (id: number, value: number) => {
+  const setItemCount = async (id: number, value: number) => {
     if (!pantryId) return;
 
-    const newQuantity = Math.max(1, value);
+    const newCount = Math.max(1, value);
 
     setIngredients((prev) =>
       prev.map((item) =>
-        item.ingredient_id === id ? { ...item, quantity: newQuantity } : item,
+        item.ingredient_id === id ? { ...item, item_count: newCount } : item,
       ),
     );
 
     await updateIngredient(id, pantryId, {
-      quantity: newQuantity,
+      item_count: newCount,
     });
   };
 
@@ -219,13 +219,16 @@ export function Pantry() {
             name={item.name_product}
             unit={item.unit}
             quantity={item.quantity}
+            itemCount={item.item_count ?? 1}
             image={item.image}
             selectMode={editMode.active}
             selected={editMode.selectedIds.has(String(item.ingredient_id))}
-            onIncrease={() => updateQuantity(item.ingredient_id, 1)}
-            onDecrease={() => updateQuantity(item.ingredient_id, -1)}
+            onIncrease={() => updateItemCount(item.ingredient_id, 1)}
+            onDecrease={() => updateItemCount(item.ingredient_id, -1)}
             onDelete={() => handleDelete(item.ingredient_id)}
-            onQuantityChange={(value) => setQuantity(item.ingredient_id, value)}
+            onItemCountChange={(value) =>
+              setItemCount(item.ingredient_id, value)
+            }
             onPress={
               editMode.active
                 ? () => editMode.toggle(String(item.ingredient_id))
