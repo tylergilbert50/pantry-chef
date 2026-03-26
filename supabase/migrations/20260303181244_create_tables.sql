@@ -27,13 +27,11 @@ CREATE TABLE pantry_ingredients (
 );
 
 CREATE TABLE user_preferences (
-    preference_id INT GENERATED ALWAYS AS IDENTITY,
-    user_id UUID NOT NULL REFERENCES users(user_id),
-    preference_name TEXT NOT NULL,
-    preference_state TEXT,
-
-    PRIMARY KEY (preference_id, user_id)
+    user_id uuid PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
+    dietary_restrictions text DEFAULT 'none',
+    ...add more
 );
+
 CREATE TABLE recipes (
     recipe_id INT NOT NULL,
     user_id UUID NOT NULL REFERENCES users(user_id),

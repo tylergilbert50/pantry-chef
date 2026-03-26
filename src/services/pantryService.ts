@@ -2,7 +2,6 @@ import { supabase } from '../lib/supabase';
 import {Database} from "../../types/database.types";
 
 type pantryInsert = Database['public']['Tables']['pantries']['Insert'];
-type pantryUpdate = Database["public"]["Tables"]["pantries"]["Update"];
 
 
 export const createPantry = async (pantry: pantryInsert) => {
