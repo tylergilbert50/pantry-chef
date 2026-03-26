@@ -12,12 +12,13 @@ export const createPantry = async (pantry: PantryInsert) => {
     return { data, error };
 };
 
-// export const getPantry = async (pantryId: string) => {
-//     const { data, error } = await supabase
-//         .from('pantries')
-//         .
-//
-// };
+export const getPantry = async (pantryId: string) => {
+    const { data, error } = await supabase
+        .from('pantries')
+        .select('*')
+        .eq('pantry_id', pantryId);
+    return { data, error };
+};
 
 export const renamePantry = async (pantryId: string, name: string) => { ... };
 
