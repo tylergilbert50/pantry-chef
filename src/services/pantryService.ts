@@ -1,10 +1,11 @@
 import { supabase } from '../lib/supabase';
 import {Database} from "../../types/database.types";
 
-type PantryInsert = Database['public']['Tables']['pantries']['Insert'];
+type pantryInsert = Database['public']['Tables']['pantries']['Insert'];
+type pantryUpdate = Database["public"]["Tables"]["pantries"]["Update"];
 
 
-export const createPantry = async (pantry: PantryInsert) => {
+export const createPantry = async (pantry: pantryInsert) => {
     const { data, error } = await supabase
         .from('pantries')
         .insert( pantry )
@@ -20,7 +21,16 @@ export const getPantry = async (pantryId: string) => {
     return { data, error };
 };
 
-export const renamePantry = async (pantryId: string, name: string) => { ... };
+// no need to edit any attributes besides name. last_updated will be updated through a trigger
+export const renamePantry = async (pantryId: string, name: string) => {
+    const { data, error } = await supabase
+        .from("pantries")
+        .update({pantry_name: name})
+        .eq("pantry_id", pantryId)
+        .select('pantry_name')
+        .single();
+    return { data, error };
+};
 
 export const deletePantry = async (pantryId: string) => {
     const { error } = await supabase
@@ -29,6 +39,3 @@ export const deletePantry = async (pantryId: string) => {
         .eq('pantry_id', pantryId)
     return { error };
 };
-export const addUserToPantry = async (userId: string, pantryId: string) => { ... };
-export const removeUserFromPantry = async (userId: string) => { ... };
-export const getPantryMembers = async (pantryId: string) => { ... };
