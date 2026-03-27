@@ -7,6 +7,7 @@ type IngredientInsert =
 type IngredientUpdate =
   Database["public"]["Tables"]["pantry_ingredients"]["Update"];
 type IngredientRow = Database["public"]["Tables"]["pantry_ingredients"]["Row"];
+
 interface quantityFilter {
   operator: "lt" | "gt" | "lte" | "gte" | "eq";
   quantity: number;
@@ -19,6 +20,14 @@ interface IngredientFilters {
   flags?: string[];
   quantity?: quantityFilter;
 }
+
+
+// todo: develop system for universally storing ingredient quantities as grams in the backend, with fields low_stock_threshold and grams_per_each
+// when an ingredient is added, the following should happen
+// 1) grams_per_each fetched and stored
+// 2) the unit provided by the user is converted and stored (this should also happen upon update)
+// 3) the category of the item is used to determine a default low_stock_threshold
+// when the ingredients are used, the gram weight is deducted from, and when the quantity in storage falls below the threshold that is considered low, the item is flagged
 
 export const addIngredient = async (ingredient: IngredientInsert) => {
   const { data, error } = await supabase

@@ -18,18 +18,20 @@ CREATE TABLE pantry_ingredients (
     name_normalized TEXT NOT NULL,
     name_product TEXT NOT NULL,
     category TEXT NOT NULL,
-    quantity INT NOT NULL,
+    weight_grams INT NOT NULL,
     unit TEXT NOT NULL,
     expiration_date DATE,
-    flag TEXT,
+    flag TEXT default null,
 
     PRIMARY KEY (ingredient_id, pantry_id)
 );
 
 CREATE TABLE user_preferences (
     user_id uuid PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
-    dietary_restrictions text DEFAULT 'none',
-    ...add more
+    dietary_restrictions TEXT[] DEFAULT '{}',
+    calorie_target TEXT DEFAULT 'medium'
+    measurement_units TEXT DEFAULT 'imperial',
+
 );
 
 CREATE TABLE recipes (
