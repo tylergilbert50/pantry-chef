@@ -14,6 +14,7 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import colors from "../../../theme/colors";
+import { Ionicons } from "@expo/vector-icons";
 import {
   addIngredient,
   updateIngredient,
@@ -26,9 +27,23 @@ import {
   mapAisleToCategory,
   searchIngredientImage,
 } from "../components/spoonacularApi";
-import { PantryIngredient } from "../../../services/pantryService";
 import { UNITS, Unit } from "../../../../types/units";
 import { CATEGORIES, Category } from "../../../../types/categories";
+
+type PantryIngredient = {
+  id?: string;
+  ingredient_id?: number;
+  name?: string;
+  name_product?: string;
+  quantity: number;
+  unit: string;
+  category: string;
+  amount?: string;
+  item_count?: number;
+  image?: string;
+  expirationDate?: string;
+  expiration_date?: string | null;
+};
 
 interface IngredientFormProps {
   product?: SpoonacularProduct | null;
@@ -62,7 +77,10 @@ export function IngredientForm({
   const isEditing = !!existingIngredient;
 
   const [nameProduct, setNameProduct] = useState(
-    existingIngredient?.name ?? product?.title ?? "",
+    existingIngredient?.name_product ??
+      existingIngredient?.name ??
+      product?.title ??
+      "",
   );
 
   const [category, setCategory] = useState<Category | "">(
@@ -79,7 +97,13 @@ export function IngredientForm({
   );
 
   const [expirationDate, setExpirationDate] = useState(
-    existingIngredient?.expirationDate ?? "",
+    existingIngredient?.expiration_date ??
+      existingIngredient?.expirationDate ??
+      "",
+  );
+
+  const [itemCount, setItemCount] = useState(
+    existingIngredient ? String(existingIngredient.item_count ?? 1) : "1",
   );
 
   const [saving, setSaving] = useState(false);
@@ -90,7 +114,27 @@ export function IngredientForm({
     nameProduct: false,
     category: false,
     quantity: false,
+    itemCount: false,
   });
+
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const resetForm = () => {
+    setNameProduct("");
+    setCategory("");
+    setQuantity("");
+    setUnit("oz");
+    setItemCount("1");
+    setExpirationDate("");
+    setErrors({
+      nameProduct: false,
+      category: false,
+      quantity: false,
+      itemCount: false,
+    });
+    setShowUnitDropdown(false);
+    setShowCategoryDropdown(false);
+  };
 
   const handleSave = async () => {
     if (!pantryId) {
@@ -103,6 +147,11 @@ export function IngredientForm({
       category: !category,
       quantity:
         !quantity.trim() || isNaN(Number(quantity)) || Number(quantity) <= 0,
+      itemCount:
+        !itemCount.trim() ||
+        isNaN(Number(itemCount)) ||
+        Number(itemCount) < 1 ||
+        !Number.isInteger(Number(itemCount)),
     };
 
     setErrors(newErrors);
@@ -126,11 +175,12 @@ export function IngredientForm({
         category: category,
         quantity: Number(quantity),
         unit: unit,
+        item_count: Number(itemCount),
         expiration_date: expirationDate.trim() || null,
       };
 
       const { error: updateError } = await updateIngredient(
-        Number(existingIngredient.id),
+        Number(existingIngredient.ingredient_id ?? existingIngredient.id),
         pantryId,
         updates,
       );
@@ -159,6 +209,7 @@ export function IngredientForm({
         category: category,
         quantity: Number(quantity),
         unit: unit,
+        item_count: Number(itemCount),
         expiration_date: expirationDate.trim() || null,
         flag: null,
         image: imageUrl,
@@ -171,7 +222,9 @@ export function IngredientForm({
       if (saveError) {
         Alert.alert("Error", saveError.message);
       } else {
-        onDone();
+        setSuccessMessage(`${nameProduct.trim()} added!`);
+        setTimeout(() => setSuccessMessage(null), 2000);
+        resetForm();
       }
     }
   };
@@ -189,6 +242,13 @@ export function IngredientForm({
           <Text style={styles.formTitle}>
             {isEditing ? "Edit Ingredient" : "Add to Pantry"}
           </Text>
+
+          {successMessage && (
+            <View style={styles.successBanner}>
+              <Ionicons name="checkmark-circle" size={18} color="#fff" />
+              <Text style={styles.successText}>{successMessage}</Text>
+            </View>
+          )}
 
           <Text style={styles.fieldLabel}>
             Product Name{" "}
@@ -247,7 +307,7 @@ export function IngredientForm({
               ]}
               value={quantity}
               onChangeText={setQuantity}
-              keyboardType="number-pad"
+              keyboardType="decimal-pad"
               placeholder="-"
               placeholderTextColor="#888"
             />
@@ -282,6 +342,18 @@ export function IngredientForm({
               )}
             </View>
           </View>
+
+          <Text style={styles.fieldLabel}>
+            Item Count {errors.itemCount && <Text style={styles.error}>*</Text>}
+          </Text>
+          <TextInput
+            style={[styles.fieldInput, errors.itemCount && styles.inputError]}
+            value={itemCount}
+            onChangeText={setItemCount}
+            keyboardType="number-pad"
+            placeholder="1"
+            placeholderTextColor="#888"
+          />
 
           <Text style={styles.fieldLabel}>Expiration Date (optional)</Text>
           <TextInput
@@ -386,4 +458,18 @@ const styles = StyleSheet.create({
   saveButtonText: { color: colors.white, fontSize: 17, fontWeight: "700" },
   cancelButton: { alignItems: "center", marginTop: 16, marginBottom: 40 },
   cancelButtonText: { color: "#999", fontSize: 15, fontWeight: "600" },
+  successBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.secondary,
+    borderRadius: 10,
+    padding: 12,
+    gap: 8,
+    marginBottom: 8,
+  },
+  successText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
 });

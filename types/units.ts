@@ -1,3 +1,3 @@
-export const UNITS = ["oz", "lb", "count"] as const;
+export const UNITS = ["oz", "lb"] as const;
 
 export type Unit = (typeof UNITS)[number];
