@@ -4,6 +4,7 @@ import colors from "../../../theme/colors";
 import { Auth } from "../../../components/auth";
 import { ForgotPassword } from "../components/ForgotPassword";
 import { Register } from "../components/Register";
+import PantryChefIcon from "../../../../assets/icons/pantrychef-icon.svg";
 
 export const SignInWithEmail: React.FC = () => {
   const [view, setView] = useState<"login" | "forgot" | "register">("login");
@@ -11,11 +12,7 @@ export const SignInWithEmail: React.FC = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>PantryChef</Text>
-      <Image
-        source={require("../../../../assets/icons/pantrychef-icon.png")}
-        style={styles.icon}
-        resizeMode="contain"
-      />
+      <PantryChefIcon width={160} height={160} marginTop={20} />
       {view === "login" && (
         <Auth
           onForgot={() => setView("forgot")}
@@ -40,11 +37,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontFamily: "InriaSerif_700Bold",
     fontSize: 48,
-  },
-  icon: {
-    marginLeft: 10,
-    marginTop: 10,
-    width: 160,
-    height: 160,
   },
 });

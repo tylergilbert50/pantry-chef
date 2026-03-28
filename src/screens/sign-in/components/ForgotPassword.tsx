@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import {
-  Alert,
-  StyleSheet,
   View,
   Text,
+  StyleSheet,
   TextInput,
   TouchableOpacity,
 } from "react-native";
@@ -17,72 +16,71 @@ type ForgotPasswordProps = {
 export function ForgotPassword({ onBack }: ForgotPasswordProps) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [errors, setErrors] = useState({ email: false });
+  const [success, setSuccess] = useState(false);
 
   async function handleReset() {
-    if (!email) {
-      Alert.alert("Error", "Please enter your email address.");
-      return;
-    }
+    const newErrors = { email: !email.trim() };
+    setErrors(newErrors);
+    if (Object.values(newErrors).some(Boolean)) return;
 
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email);
 
     if (error) {
-      Alert.alert("Error", error.message);
+      setErrors({ email: true });
     } else {
-      setSent(true);
+      setSuccess(true);
     }
+
     setLoading(false);
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.heading}>Reset Password</Text>
+      <Text style={styles.title}>Reset Password</Text>
       <Text style={styles.description}>
         Enter the email address associated with your account and we'll send you
         a link to reset your password.
       </Text>
 
-      {sent ? (
-        <View style={styles.sentContainer}>
-          <Text style={styles.sentText}>
-            Check your email for a password reset link!
-          </Text>
-          <TouchableOpacity style={styles.backButton} onPress={onBack}>
-            <Text style={styles.backButtonText}>Back to Sign In</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              onChangeText={setEmail}
-              value={email}
-              placeholder="email@address.com"
-              placeholderTextColor="#999"
-              autoCapitalize="none"
-              keyboardType="email-address"
-              style={styles.input}
-            />
-          </View>
+      <View style={styles.inputGroup}>
+        <Text style={styles.label}>
+          Email {errors.email && <Text style={styles.error}>*</Text>}
+        </Text>
+        <TextInput
+          value={email}
+          onChangeText={(text) => {
+            setEmail(text);
+            if (errors.email) setErrors({ email: false });
+          }}
+          placeholder="Email"
+          placeholderTextColor="#999"
+          autoCapitalize="none"
+          keyboardType="email-address"
+          style={styles.input}
+        />
+      </View>
 
-          <TouchableOpacity
-            style={[styles.resetButton, loading && styles.buttonDisabled]}
-            onPress={handleReset}
-            disabled={loading}
-          >
-            <Text style={styles.resetButtonText}>
-              {loading ? "Sending..." : "Send Reset Link"}
-            </Text>
-          </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.button, loading && styles.buttonDisabled]}
+        onPress={handleReset}
+        disabled={loading}
+      >
+        <Text style={styles.buttonText}>
+          {loading ? "Sending..." : "Send Reset Link"}
+        </Text>
+      </TouchableOpacity>
 
-          <TouchableOpacity onPress={onBack} style={styles.backLink}>
-            <Text style={styles.backLinkText}>Back to Sign In</Text>
-          </TouchableOpacity>
-        </>
+      {success && (
+        <Text style={styles.successText}>
+          Reset link sent! Check your email.
+        </Text>
       )}
+
+      <TouchableOpacity onPress={onBack} style={styles.backButton}>
+        <Text style={styles.backText}>Back to Sign In</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -93,20 +91,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     marginTop: 20,
   },
-  heading: {
+  title: {
     fontSize: 22,
     fontWeight: "700",
+    marginBottom: 12,
     color: "#333",
-    marginBottom: 10,
   },
   description: {
     fontSize: 14,
     color: "#777",
     lineHeight: 20,
-    marginBottom: 24,
+    marginBottom: 12,
   },
   inputGroup: {
-    marginBottom: 24,
+    marginBottom: 16,
   },
   label: {
     fontSize: 14,
@@ -122,49 +120,37 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: "#f9f9f9",
   },
-  resetButton: {
+  error: {
+    color: "red",
+    fontWeight: "700",
+  },
+  button: {
     backgroundColor: colors.primary,
     borderRadius: 10,
     padding: 16,
     alignItems: "center",
+    marginTop: 10,
   },
   buttonDisabled: {
     opacity: 0.5,
   },
-  resetButtonText: {
+  buttonText: {
     color: "#fff",
     fontSize: 17,
     fontWeight: "700",
   },
-  backLink: {
-    alignItems: "center",
-    marginTop: 20,
-  },
-  backLinkText: {
-    fontSize: 14,
+  successText: {
+    marginTop: 16,
+    textAlign: "center",
+    color: colors.primary,
     fontWeight: "600",
   },
-  sentContainer: {
-    alignItems: "center",
-    marginTop: 20,
-  },
-  sentText: {
-    fontSize: 16,
-    color: "#333",
-    textAlign: "center",
-    marginBottom: 24,
-    lineHeight: 22,
-  },
   backButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 10,
-    padding: 16,
+    marginTop: 20,
     alignItems: "center",
-    width: "100%",
   },
-  backButtonText: {
-    color: "#fff",
-    fontSize: 17,
-    fontWeight: "700",
+  backText: {
+    color: "#777",
+    fontSize: 14,
   },
 });
