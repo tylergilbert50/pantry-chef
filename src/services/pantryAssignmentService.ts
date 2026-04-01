@@ -21,7 +21,7 @@ export const removeUserFromPantry = async (userId: string) => {
 export const getPantryMembers = async (pantryId: string) => {
     const { data, error } = await supabase
         .from('users')
-        .select('*')
+        .select()
         .eq("pantry_id", pantryId);
     return { data, error };
 };

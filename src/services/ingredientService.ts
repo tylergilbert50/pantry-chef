@@ -21,7 +21,6 @@ interface IngredientFilters {
   quantity?: quantityFilter;
 }
 
-
 // todo: develop system for universally storing ingredient quantities as grams in the backend, with fields low_stock_threshold and grams_per_each
 // when an ingredient is added, the following should happen
 // 1) grams_per_each fetched and stored
@@ -69,7 +68,7 @@ export const getIngredients = async (
 ) => {
   let query = supabase
     .from("pantry_ingredients")
-    .select("*")
+    .select()
     .eq("pantry_id", pantryId);
 
   if (filters?.search) {
