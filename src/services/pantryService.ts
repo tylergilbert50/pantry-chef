@@ -2,9 +2,8 @@ import { supabase } from '../lib/supabase';
 import {Database} from "../../types/database.types";
 
 type pantryInsert = Database['public']['Tables']['pantries']['Insert'];
-type pantryUpdate = Database["public"]["Tables"]["pantries"]["Update"];
 
-
+// Since a pantry ia automatically created for new users, this function is only used after a user leaves or deletes a pantry and needs to start a new one
 export const createPantry = async (pantry: pantryInsert) => {
     const { data, error } = await supabase
         .from('pantries')
@@ -16,12 +15,11 @@ export const createPantry = async (pantry: pantryInsert) => {
 export const getPantry = async (pantryId: string) => {
     const { data, error } = await supabase
         .from('pantries')
-        .select('*')
+        .select()
         .eq('pantry_id', pantryId);
     return { data, error };
 };
 
-// no need to edit any attributes besides name. last_updated will be updated through a trigger
 export const renamePantry = async (pantryId: string, name: string) => {
     const { data, error } = await supabase
         .from("pantries")

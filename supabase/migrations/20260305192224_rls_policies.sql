@@ -11,13 +11,19 @@ FOR ALL
 USING( pantry_id IN (
         SELECT pantry_id FROM users WHERE user_id = (SELECT auth.uid())
     )
+)
+WITH CHECK (
+    pantry_id IN (
+        SELECT pantry_id FROM users WHERE user_id = (SELECT auth.uid())
+    )
 );
 
 CREATE
 POLICY "Users can access own user details"
 ON users
 FOR ALL
-USING(user_id = (SELECT auth.uid()));
+USING(user_id = (SELECT auth.uid()))
+WITH CHECK (user_id = (SELECT auth.uid()));
 
 CREATE
 POLICY "Users can access own pantry ingredients"
@@ -26,16 +32,23 @@ FOR ALL
     USING (pantry_id IN (
         SELECT pantry_id FROM users WHERE user_id = (SELECT auth.uid())
     )
+)
+WITH CHECK (
+    pantry_id IN (
+        SELECT pantry_id FROM users WHERE user_id = (SELECT auth.uid())
+    )
 );
 
 CREATE
 POLICY "Users can access own preferences"
 ON user_preferences
 FOR ALL
-USING(user_id = (SELECT auth.uid()));
+USING(user_id = (SELECT auth.uid()))
+WITH CHECK (user_id = (SELECT auth.uid()));
 
 CREATE
 POLICY "Users can access own recipe details"
 ON recipes
 FOR ALL
-USING(user_id = (SELECT auth.uid()));
+USING(user_id = (SELECT auth.uid()))
+WITH CHECK (user_id = (SELECT auth.uid()));
