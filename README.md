@@ -2,7 +2,7 @@
 
 > A mobile app that helps you make better use of the food you already have at home by suggesting recipes based on your current pantry inventory.
 
-## About
+## ❔ About
 
 > Pantry Chef addresses a problem: Many people regularly eat out or buy additional groceries even when they have available ingredients, largely because they are unsure what meals can be prepared. The primary purpose of this project is to reduce unnecessary spending, minimize food waste, and simplify meal decision-making by organizing food items and suggesting meals that can be made using only existing ingredients.
 
