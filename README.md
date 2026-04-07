@@ -49,7 +49,7 @@ Braxton Wilson
 
 ## Testing
 
-## Known Issues
+## ⚠️ Known Issues
 
 ### Known Audit Warnings
 The `npm audit` output shows Angular vulnerabilities — these come from
