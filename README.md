@@ -45,7 +45,7 @@ We use the Spoonacular API for: recipe search, filtering, ingredient normalizati
 Tyler Gilbert \
 Ashton Hull \
 Jacob Lehtola \
-Braxton Wilson \
+Braxton Wilson 
 
 ## Testing
 
