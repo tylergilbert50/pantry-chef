@@ -1,3 +1,6 @@
+<div align="center" width="100%">
+    <img src="./assets/icons/pantrychef-icon.svg" width="128" alt=" Logo" />
+</div>
 # Pantry Chef
 
  A mobile app that helps you make better use of the food you already have at home by suggesting recipes based on your current pantry inventory.
