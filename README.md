@@ -10,7 +10,7 @@
 **Save Money** by cooking at home and making less grocery purchases
 **Simplify meal planning** with recipes perfect for your inventory
 
-## Features
+## ⭐ Features
 
 ## Tech Stack
 React Native
@@ -42,10 +42,10 @@ We use the Spoonacular API for: recipe search, filtering, ingredient normalizati
 ** Rate Limits: **
 
 ## Team
-Tyler Gilbert
-Ashton Hull
-Jacob Lehtola
-Braxton Wilson
+Tyler Gilbert \
+Ashton Hull \
+Jacob Lehtola \
+Braxton Wilson \
 
 ## Testing
 
