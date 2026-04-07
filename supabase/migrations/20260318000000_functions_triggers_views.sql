@@ -1,30 +1,26 @@
+-- Trigger: Automatically fills user defaults in the DB upon insert into auth
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+new_pantry_id UUID;
 BEGIN
-    PERFORM public.create_profile_and_set_defaults(NEW);
-    RETURN NEW;
+INSERT INTO public.pantries (pantry_name, last_updated)
+VALUES (NEW.email || '''s Pantry', CURRENT_DATE)
+    RETURNING pantry_id INTO new_pantry_id;
+
+INSERT INTO public.users (user_id, first_name, last_name, email, pantry_id)
+VALUES (NEW.id, '', '', NEW.email, new_pantry_id);
+
+INSERT INTO public.user_preferences (user_id, dietary_restrictions, calorie_target, measurement_units)
+VALUES (NEW.id, '{}', 'none', 'imperial');
+
+RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
-CREATE OR REPLACE FUNCTION public.create_profile_and_set_defaults(user_record RECORD)
-RETURNS void AS $$
-DECLARE
-    new_pantry_id UUID;
-BEGIN
-    INSERT INTO public.pantries (pantry_name, last_updated)
-    VALUES (user_record.email || '''s Pantry', CURRENT_DATE)
-    RETURNING pantry_id INTO new_pantry_id;
-
-    INSERT INTO public.users (user_id, first_name, last_name, email, pantry_id)
-    VALUES (user_record.id, '', '', user_record.email, new_pantry_id);
-
-    INSERT INTO public.user_preferences (user_id, dietary_restrictions, calorie_target, measurement_units)
-    VALUES (user_record.id, '{}', 'none', 'imperial');
-END;
-$$ LANGUAGE plpgsql;
-
 CREATE OR REPLACE TRIGGER on_auth_user_created
 AFTER INSERT ON auth.users
+FOR EACH ROW
 EXECUTE FUNCTION public.handle_new_user();
 
 -----------------------------------------------------------
