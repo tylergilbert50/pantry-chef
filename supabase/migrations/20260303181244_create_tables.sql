@@ -31,14 +31,14 @@ CREATE TABLE pantry_ingredients (
 );
 
 CREATE TABLE user_preferences (
-    user_id uuid PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
+    user_id UUID PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
     dietary_restrictions TEXT[] DEFAULT '{}',
     calorie_target TEXT DEFAULT 'medium',
     measurement_units TEXT DEFAULT 'imperial'
 );
 
 CREATE TABLE recipes (
-    recipe_id TEXT NOT NULL,
+    recipe_id TEXT UNIQUE NOT NULL, -- pull from spoonacular
     user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     recipe_name TEXT NOT NULL,
     saved BOOLEAN NOT NULL,

@@ -25,7 +25,7 @@ interface IngredientFilters {
 // when an ingredient is added, the following should happen
 // 1) grams_per_each fetched and stored
 // 2) the unit provided by the user is converted and stored (this should also happen upon update)
-// 3) the category of the item is used to determine a default low_stock_threshold
+// 3) the category of the item is used to determine a default low_stock_threshold (exists as trigger)
 // when the ingredients are used, the gram weight is deducted from, and when the quantity in storage falls below the threshold that is considered low, the item is flagged
 
 export const addIngredient = async (ingredient: IngredientInsert) => {
