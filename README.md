@@ -13,7 +13,8 @@
 ## ⭐ Features
 
 ## Tech Stack
-React Native
+React Native \ 
+Spoonacular
 
 ## Prerequisites
 
