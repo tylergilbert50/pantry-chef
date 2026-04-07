@@ -6,8 +6,8 @@
 
 > Pantry Chef addresses a problem: Many people regularly eat out or buy additional groceries even when they have available ingredients, largely because they are unsure what meals can be prepared. The primary purpose of this project is to reduce unnecessary spending, minimize food waste, and simplify meal decision-making by organizing food items and suggesting meals that can be made using only existing ingredients.
 
-**Reduce food waste** by using ingredients before they expire
-**Save Money** by cooking at home and making less grocery purchases
+**Reduce food waste** by using ingredients before they expire \
+**Save Money** by cooking at home and making less grocery purchases \
 **Simplify meal planning** with recipes perfect for your inventory
 
 ## ⭐ Features
