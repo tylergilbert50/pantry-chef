@@ -43,7 +43,7 @@ We use the Spoonacular API for: recipe search, filtering, ingredient normalizati
 ** Rate Limits: **
 
 ## Team
-Tyler Gilbert \
+# Tyler Gilbert \
 Ashton Hull \
 Jacob Lehtola \
 Braxton Wilson 
