@@ -14,7 +14,7 @@
 
 ## Tech Stack
 React Native \ 
-Spoonacular
+Spoonacular \
 
 ## Prerequisites
 
