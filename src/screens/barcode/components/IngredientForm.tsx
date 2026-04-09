@@ -26,7 +26,7 @@ import {
   IngredientInsert,
   mapAisleToCategory,
   searchIngredientImage,
-} from "../components/spoonacularApi";
+} from "../../../services/apiService";
 import { UNITS, Unit } from "../../../../types/units";
 import { CATEGORIES, Category } from "../../../../types/categories";
 
