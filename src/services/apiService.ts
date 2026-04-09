@@ -1,5 +1,5 @@
 import { Database } from "../../types/database.types";
-import { QueryClient } from '@tanstack/react-query';
+import { queryClient } from "../../App";
 
 export type IngredientInsert =
     Database["public"]["Tables"]["pantry_ingredients"]["Insert"];
@@ -8,13 +8,6 @@ const SPOONACULAR_API_KEY = process.env.EXPO_PUBLIC_SPOONACULAR_API_KEY;
 const SPOONACULAR_CDN = "https://img.spoonacular.com/ingredients_250x250";
 
 
-const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: {
-            staleTime: 1000 * 60 * 60, // 1 hour. After 1 hour, cached values become invalid.
-        },
-    },
-})
 
 export interface SpoonacularProduct {
     title: string;
@@ -122,7 +115,7 @@ export async function lookupBarcode(upc: string): Promise<SpoonacularProduct> {
 }
 
 export async function searchIngredientImage(name: string): Promise<string | undefined> {
-    const imageName = queryClient.fetchQuery({
+    const imageName = await queryClient.fetchQuery({
         queryKey: ['imageName', name], // Unique cache key
         queryFn: () => fetchImage(name)
     });

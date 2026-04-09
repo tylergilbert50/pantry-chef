@@ -7,6 +7,20 @@ import {
 } from "@expo-google-fonts/montserrat";
 import { supabase } from "./src/lib/supabase";
 import { RootNavigator } from "./src/navigation/RootNavigator";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+
+export const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            staleTime: 1000 * 60 * 60, // 1 hour. After 1 hour, cached values become invalid.
+            gcTime: 1000 * 60 * 60,
+            refetchOnMount: false,
+            refetchOnWindowFocus: false,
+            refetchOnReconnect: false,
+        },
+    },
+})
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -35,5 +49,9 @@ export default function App() {
     return null;
   }
 
-  return <RootNavigator />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RootNavigator />
+    </QueryClientProvider>
+  );
 }
