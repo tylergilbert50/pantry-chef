@@ -23,8 +23,8 @@ type SpoonacularIngredient = {
     possibleUnits: Array<string>;
 }
 
-type SpoonacularRecipe = {
-    id: string;
+export type SpoonacularRecipe = {
+    id: number;
     image: string;
     imageTYpe: string;
     likes: number;
@@ -32,9 +32,74 @@ type SpoonacularRecipe = {
     missedIngredients: Array<SpoonacularIngredient>;
 }
 
-type SpoonacularRecipeList = Array<SpoonacularRecipe>;
+export type SpoonacularRecipeInformation = {
+    id: number;
+    title: string;
+    image: string;
+    imageType: string;
+    servings: number;
+    readyInMinutes: number;
+    cookingMinutes: number;
+    preparationMinutes: number;
+    license: string;
+    sourceName: string;
+    sourceURL: string;
+    spoonacularSourceUrl: string;
+    healthScore: number;
+    spoonacularScore: number;
+    pricePerServing: number;
+    analyzedInstructions: Array<string>;
+    cheap: boolean;
+    creditsText: string;
+    cuisines: Array<string>;
+    dairyFree: boolean;
+    diets: Array<string>;
+    gaps: boolean;
+    instructions: string;
+    glutenFree: boolean;
+    ketogenic: boolean;
+    lowFodmap: boolean;
+    occasions: [];
+    sustainable: boolean;
+    vegan: boolean;
+    vegetarian: boolean;
+    veryHealthy: boolean;
+    veryPopular: boolean;
+    whole30: boolean;
+    weightWatcherSmartPoints: number;
+    dishTypes: Array<string>;
+    extendedIngredients: SpoonacularIngredientList;
+    summary: string;
 
-type SpoonacularIngredientList = Array<SpoonacularIngredient>;
+}
+
+export type SpoonacularEquipmentItem = {
+    id: number;
+    image: string;
+    name: string;
+    temperature: {
+        number: number;
+        unit: string;
+    };
+}
+
+export type SpoonacularEquipmentList = Array<SpoonacularEquipmentItem>;
+
+export type SpoonacularRecipeStep = {
+    equipment: SpoonacularEquipmentList;
+    ingredients: SpoonacularIngredientList;
+    number: number;
+    step: string;
+}
+
+export type SpoonacularRecipeInstructions = {
+    name: string;
+    steps: Array<SpoonacularRecipeStep>;
+} 
+
+export type SpoonacularRecipeList = Array<SpoonacularRecipe>;
+
+export type SpoonacularIngredientList = Array<SpoonacularIngredient>;
 
 export function mapAisleToCategory(aisle?: string): string {
     if (!aisle) return "Other";
@@ -112,9 +177,26 @@ const fetchImage = async (name: string): Promise<string | undefined> => {
 }
 
 const fetchRecipes = async (ingredients: string, numberOfRecipes: number, ranking: number, ignorePantry: boolean): Promise<SpoonacularRecipeList> => {
+    console.log("Attempting to fetch recipes...");
     const result = await fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${encodeURIComponent(ingredients)}&number=${numberOfRecipes}&ranking=${ranking}&ignorePantry=${encodeURIComponent(ignorePantry)}`);
     if (!result.ok) throw new Error("Network response wasn't okay");
     const data: SpoonacularRecipeList = await result.json();
+    return data;
+}
+
+const fetchRecipeInformation = async (id: number, includeNutrition: boolean): Promise<SpoonacularRecipeInformation> => {
+    console.log("Attempting to get recipe information...");
+    const result = await fetch(`https://api.spoonacular.com/recipes/${id}/information?includeNutrition=${includeNutrition}`);
+    if (!result.ok) throw new Error("Network response wasn't okay");
+    const data: SpoonacularRecipeInformation = await result.json();
+    return data;
+}
+
+const fetchRecipeInstructions = async (id: number): Promise<SpoonacularRecipeInstructions> => {
+    console.log("Attempting to get recipe instructions...");
+    const result = await fetch(`https://api.spoonacular.com/recipes/${id}/analyzedInstructions`);
+    if (!result.ok) throw new Error("Network response wasn't okay");
+    const data: SpoonacularRecipeInstructions = await result.json();
     return data;
 }
 
@@ -146,8 +228,24 @@ export async function searchRecipes(ingredients: string, numberOfRecipes: number
         throw new Error("Error: Rank must be 1 or 2.");
     }
     const data = await queryClient.fetchQuery({
-        queryKey: ['recipeSearch', ingredients], // Unique cache key
+        queryKey: ['recipeSearch', ingredients, 'numberOfRecipes', numberOfRecipes, 'ranking', ranking, 'ignorePantry', ignorePantry], // Unique cache key
         queryFn: () => fetchRecipes(ingredients, numberOfRecipes, ranking, ignorePantry),
+    });
+    return data;
+}
+
+export async function getRecipeInformation(id: number, includeNutrition: boolean): Promise<SpoonacularRecipeInformation> {
+    const data = await queryClient.fetchQuery({
+        queryKey: ['recipeId', id], // Unique cache key
+        queryFn: () => fetchRecipeInformation(id, includeNutrition),
+    });
+    return data;
+}
+
+export async function getRecipeInstructions(id: number): Promise<SpoonacularRecipeInstructions> {
+    const data = await queryClient.fetchQuery({
+        queryKey: ['recipeInstructionsId', id], // Unique cache key
+        queryFn: () => fetchRecipeInstructions(id),
     });
     return data;
 }
