@@ -54,4 +54,20 @@ export default function App() {
       <RootNavigator />
     </QueryClientProvider>
   );
+  /*
+  // RootNavigator controls whether the user sees
+  // the authentication flow or the main app
+  return <Recipes
+    title={"Chicken Fried Rice"} recipeType={"Lunch / Dinner / Breakfast / Snack"}
+    detailCards={{
+      "Calories": "350",
+      "Carbs": "36/g",
+      "Fats": "44/g",
+      "Protein": "30/g"
+    }}
+    textIntro="This is a recipe for basic fried rice. Total estimated cooking time is 2 hours."
+    ingredients={{items: ["3 cups Jasmine rice","4 lbs Chicken", "5 carrots", "2 bunches green onions", "Frozen peas", "Sesame seed oil", "Soy sauce"]}}
+    bodyText="Rinse the rice until the water runs clear. Place rice in rice cooker and start the rice cooker. Dice carrot and green onions."
+    /> //<RootNavigator session={session} />;
+    */;
 }
