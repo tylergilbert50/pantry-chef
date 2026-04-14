@@ -7,8 +7,6 @@ export type IngredientInsert =
 const SPOONACULAR_API_KEY = process.env.EXPO_PUBLIC_SPOONACULAR_API_KEY;
 const SPOONACULAR_CDN = "https://img.spoonacular.com/ingredients_250x250";
 
-
-
 export interface SpoonacularProduct {
     title: string;
     brand: string;
@@ -24,6 +22,17 @@ type SpoonacularIngredient = {
     aisle: string;
     possibleUnits: Array<string>;
 }
+
+type SpoonacularRecipe = {
+    id: string;
+    image: string;
+    imageTYpe: string;
+    likes: number;
+    missedIngredientCount: number;
+    missedIngredients: Array<SpoonacularIngredient>;
+}
+
+type SpoonacularRecipeList = Array<SpoonacularRecipe>;
 
 type SpoonacularIngredientList = Array<SpoonacularIngredient>;
 
@@ -102,6 +111,13 @@ const fetchImage = async (name: string): Promise<string | undefined> => {
     return undefined;
 }
 
+const fetchRecipes = async (ingredients: string, numberOfRecipes: number, ranking: number, ignorePantry: boolean): Promise<SpoonacularRecipeList> => {
+    const result = await fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${encodeURIComponent(ingredients)}&number=${numberOfRecipes}&ranking=${ranking}&ignorePantry=${encodeURIComponent(ignorePantry)}`);
+    if (!result.ok) throw new Error("Network response wasn't okay");
+    const data: SpoonacularRecipeList = await result.json();
+    return data;
+}
+
 export async function lookupBarcode(upc: string): Promise<SpoonacularProduct> {
     console.log("Attempting to get UPC data...");
     const data = await queryClient.fetchQuery({
@@ -120,4 +136,18 @@ export async function searchIngredientImage(name: string): Promise<string | unde
         queryFn: () => fetchImage(name)
     });
     return imageName;
+}
+
+export async function searchRecipes(ingredients: string, numberOfRecipes: number, ranking: number, ignorePantry: boolean): Promise<SpoonacularRecipeList> {
+    if (numberOfRecipes < 1 || numberOfRecipes > 100) {
+        throw new Error("Number of recipes to return must be between 1 and 100 inclusive.");
+    }
+    if (ranking != 1 && ranking != 2) {
+        throw new Error("Error: Rank must be 1 or 2.");
+    }
+    const data = await queryClient.fetchQuery({
+        queryKey: ['recipeSearch', ingredients], // Unique cache key
+        queryFn: () => fetchRecipes(ingredients, numberOfRecipes, ranking, ignorePantry),
+    });
+    return data;
 }
