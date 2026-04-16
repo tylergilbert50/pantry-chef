@@ -54,7 +54,7 @@ const NumberedList = ({ items }: { items: string[] }) => {
   )
 };
 
-export function Recipes() {
+export function RecipeDetail() {
   const [data, setData] = useState(createInitialProps);
   useEffect(() => {
     const fetchRecipe = async () => {
