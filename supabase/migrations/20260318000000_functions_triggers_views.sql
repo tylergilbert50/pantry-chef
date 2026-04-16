@@ -34,7 +34,7 @@ SET last_updated = CURRENT_DATE
 WHERE pantry_id = COALESCE(NEW.pantry_id, OLD.pantry_id);
 RETURN COALESCE(NEW, OLD);
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 CREATE TRIGGER trg_update_pantry_last_updated
 AFTER INSERT OR UPDATE OR DELETE ON pantry_ingredients
