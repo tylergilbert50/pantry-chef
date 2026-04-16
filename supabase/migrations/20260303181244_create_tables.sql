@@ -20,15 +20,14 @@ CREATE TABLE pantry_ingredients (
     name_product TEXT NOT NULL,
     category TEXT NOT NULL,
     quantity DECIMAL,
+    unit TEXT NOT NULL,
     low_stock_threshold DECIMAL,
     in_stock BOOLEAN GENERATED ALWAYS AS (
         CASE
-            WHEN amount_grams IS NOT NULL THEN amount_grams > COALESCE(low_stock_threshold, 0)
-            WHEN quantity IS NOT NULL THEN quantity > COALESCE(low_stock_threshold, 0)
+            WHEN quantity IS NOT NULL THEN quantity > low_stock_threshold
             ELSE FALSE
         END
     ) STORED,
-    display_unit TEXT NOT NULL,
     expiration_date DATE,
     image TEXT DEFAULT NULL
 );

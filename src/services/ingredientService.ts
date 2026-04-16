@@ -1,6 +1,6 @@
 import { supabase } from "../lib/supabase";
 import { Database } from "../../types/database.types";
-import { searchIngredientImage } from "../screens/barcode/components/spoonacularApi";
+import { searchIngredientImage } from "./apiService";
 
 type IngredientInsert =
   Database["public"]["Tables"]["pantry_ingredients"]["Insert"];
@@ -72,21 +72,15 @@ export async function backfillImages(
   ingredients: IngredientRow[],
   pantryId: string,
 ) {
-  const missing = ingredients.filter((item) => !item.image);
+  const missing = ingredients.filter((item) => item.image == null);
   if (missing.length === 0) return;
 
   for (const item of missing) {
     try {
       const imageUrl = await searchIngredientImage(item.name_product);
-      if (imageUrl) {
-        await supabase
-          .from("pantry_ingredients")
-          .update({ image: imageUrl })
-          .eq("ingredient_id", item.ingredient_id)
-          .eq("pantry_id", pantryId);
-
-        item.image = imageUrl;
-      }
+      const resolved = imageUrl ?? "";
+      await updateIngredient(item.ingredient_id, pantryId, { image: resolved });
+      item.image = resolved;
     } catch {}
   }
 }

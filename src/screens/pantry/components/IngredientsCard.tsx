@@ -16,8 +16,6 @@ type IngredientCardProps = {
   name: string;
   quantity: number;
   unit?: string;
-  itemCount: number;
-  calories?: number;
   image?: string;
   selectMode?: boolean;
   selected?: boolean;
@@ -25,24 +23,22 @@ type IngredientCardProps = {
   onIncrease: () => void;
   onDecrease: () => void;
   onDelete: () => void;
-  onItemCountChange: (value: number) => void;
+  onQuantityChange: (value: number) => void;
   onPress: () => void;
   onSwipeOpen?: (close: () => void) => void;
 };
 
 export default function IngredientsCard({
   name,
-  calories,
   unit,
   quantity,
-  itemCount,
   image,
   selectMode = false,
   selected = false,
   onIncrease,
   onDecrease,
   onDelete,
-  onItemCountChange,
+  onQuantityChange,
   onPress,
   onSwipeOpen,
 }: IngredientCardProps) {
@@ -115,18 +111,14 @@ export default function IngredientsCard({
             {quantity} {unit}
           </Text>
         ) : null}
-
-        {calories !== undefined && (
-          <Text style={styles.subText}>{calories} Calories</Text>
-        )}
       </View>
 
       {!selectMode && (
         <QuantityStepper
-          quantity={itemCount}
+          quantity={quantity}
           onIncrease={onIncrease}
           onDecrease={onDecrease}
-          onQuantityChange={onItemCountChange}
+          onQuantityChange={onQuantityChange}
         />
       )}
     </TouchableOpacity>

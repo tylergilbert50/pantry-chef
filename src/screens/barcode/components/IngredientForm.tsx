@@ -27,23 +27,12 @@ import {
   mapAisleToCategory,
   searchIngredientImage,
 } from "../../../services/apiService";
+import { Database } from "../../../../types/database.types";
 import { UNITS, Unit } from "../../../../types/units";
 import { CATEGORIES, Category } from "../../../../types/categories";
 
-type PantryIngredient = {
-  id?: string;
-  ingredient_id?: number;
-  name?: string;
-  name_product?: string;
-  quantity: number;
-  unit: string;
-  category: string;
-  amount?: string;
-  item_count?: number;
-  image?: string;
-  expirationDate?: string;
-  expiration_date?: string | null;
-};
+type PantryIngredient =
+  Database["public"]["Tables"]["pantry_ingredients"]["Row"];
 
 interface IngredientFormProps {
   product?: SpoonacularProduct | null;
@@ -77,10 +66,7 @@ export function IngredientForm({
   const isEditing = !!existingIngredient;
 
   const [nameProduct, setNameProduct] = useState(
-    existingIngredient?.name_product ??
-      existingIngredient?.name ??
-      product?.title ??
-      "",
+    existingIngredient?.name_product ?? product?.title ?? "",
   );
 
   const [category, setCategory] = useState<Category | "">(
@@ -89,7 +75,9 @@ export function IngredientForm({
   );
 
   const [quantity, setQuantity] = useState(
-    existingIngredient ? String(existingIngredient.quantity) : "",
+    existingIngredient?.quantity != null
+      ? String(existingIngredient.quantity)
+      : "",
   );
 
   const [unit, setUnit] = useState<Unit>(
@@ -97,13 +85,7 @@ export function IngredientForm({
   );
 
   const [expirationDate, setExpirationDate] = useState(
-    existingIngredient?.expiration_date ??
-      existingIngredient?.expirationDate ??
-      "",
-  );
-
-  const [itemCount, setItemCount] = useState(
-    existingIngredient ? String(existingIngredient.item_count ?? 1) : "1",
+    existingIngredient?.expiration_date ?? "",
   );
 
   const [saving, setSaving] = useState(false);
@@ -114,7 +96,6 @@ export function IngredientForm({
     nameProduct: false,
     category: false,
     quantity: false,
-    itemCount: false,
   });
 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -124,13 +105,11 @@ export function IngredientForm({
     setCategory("");
     setQuantity("");
     setUnit("oz");
-    setItemCount("1");
     setExpirationDate("");
     setErrors({
       nameProduct: false,
       category: false,
       quantity: false,
-      itemCount: false,
     });
     setShowUnitDropdown(false);
     setShowCategoryDropdown(false);
@@ -147,11 +126,6 @@ export function IngredientForm({
       category: !category,
       quantity:
         !quantity.trim() || isNaN(Number(quantity)) || Number(quantity) <= 0,
-      itemCount:
-        !itemCount.trim() ||
-        isNaN(Number(itemCount)) ||
-        Number(itemCount) < 1 ||
-        !Number.isInteger(Number(itemCount)),
     };
 
     setErrors(newErrors);
@@ -175,12 +149,11 @@ export function IngredientForm({
         category: category,
         quantity: Number(quantity),
         unit: unit,
-        item_count: Number(itemCount),
         expiration_date: expirationDate.trim() || null,
       };
 
       const { error: updateError } = await updateIngredient(
-        Number(existingIngredient.ingredient_id ?? existingIngredient.id),
+        existingIngredient.ingredient_id,
         pantryId,
         updates,
       );
@@ -196,22 +169,25 @@ export function IngredientForm({
       let imageUrl: string | null = product?.image ?? null;
 
       if (!imageUrl) {
-        const searched = await searchIngredientImage(
-          normalizeName(nameProduct),
-        );
-        imageUrl = searched ?? null;
+        try {
+          const searched = await searchIngredientImage(
+            normalizeName(nameProduct),
+          );
+          imageUrl = searched ?? null;
+        } catch {
+          imageUrl = null;
+        }
       }
 
       const ingredient: IngredientInsert = {
         pantry_id: pantryId,
+        spoonacular_id: product?.id != null ? String(product.id) : "",
         name_normalized: normalizeName(nameProduct),
         name_product: nameProduct.trim(),
         category: category,
         quantity: Number(quantity),
         unit: unit,
-        item_count: Number(itemCount),
         expiration_date: expirationDate.trim() || null,
-        flag: null,
         image: imageUrl,
       };
 
@@ -350,18 +326,6 @@ export function IngredientForm({
               )}
             </View>
           </View>
-
-          <Text style={styles.fieldLabel}>
-            Item Count {errors.itemCount && <Text style={styles.error}>*</Text>}
-          </Text>
-          <TextInput
-            style={[styles.fieldInput, errors.itemCount && styles.inputError]}
-            value={itemCount}
-            onChangeText={setItemCount}
-            keyboardType="number-pad"
-            placeholder="1"
-            placeholderTextColor="#888"
-          />
 
           <Text style={styles.fieldLabel}>Expiration Date (optional)</Text>
           <TextInput

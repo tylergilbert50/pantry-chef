@@ -54,49 +54,46 @@ export type Database = {
       }
       pantry_ingredients: {
         Row: {
-          amount_grams: number
           category: string
-          display_unit: string
           expiration_date: string | null
-          grams_per_each: number
           image: string | null
           in_stock: boolean | null
           ingredient_id: string
-          low_stock_threshold_grams: number | null
+          low_stock_threshold: number | null
           name_normalized: string
           name_product: string
           pantry_id: string
+          quantity: number | null
           spoonacular_id: string
+          unit: string
         }
         Insert: {
-          amount_grams: number
           category: string
-          display_unit: string
           expiration_date?: string | null
-          grams_per_each: number
           image?: string | null
           in_stock?: boolean | null
           ingredient_id?: string
-          low_stock_threshold_grams?: number | null
+          low_stock_threshold?: number | null
           name_normalized: string
           name_product: string
           pantry_id: string
+          quantity?: number | null
           spoonacular_id: string
+          unit: string
         }
         Update: {
-          amount_grams?: number
           category?: string
-          display_unit?: string
           expiration_date?: string | null
-          grams_per_each?: number
           image?: string | null
           in_stock?: boolean | null
           ingredient_id?: string
-          low_stock_threshold_grams?: number | null
+          low_stock_threshold?: number | null
           name_normalized?: string
           name_product?: string
           pantry_id?: string
+          quantity?: number | null
           spoonacular_id?: string
+          unit?: string
         }
         Relationships: [
           {
@@ -206,10 +203,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_profile_and_set_defaults: {
-        Args: { user_record: Record<string, unknown> }
-        Returns: undefined
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
