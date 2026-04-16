@@ -7,7 +7,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
 import { Barcode } from "../screens/barcode/Barcode";
 import { Pantry } from "../screens/pantry/Pantry";
-import { Recipes } from "../screens/recipes/Recipes";
+import { RecipesNavigator } from "../screens/recipes/RecipesNavigator";
 import { Account } from "../screens/account/Account";
 import colors from "../theme/colors";
 
@@ -59,7 +59,7 @@ export function AppNavigator() {
 
       <Tab.Screen
         name="Recipes"
-        component={Recipes}
+        component={RecipesNavigator}
         options={{
           tabBarIcon: ({ focused }) => (
             <TabIcon
