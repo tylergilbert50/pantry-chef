@@ -255,12 +255,16 @@ export function IngredientForm({
             {errors.nameProduct && <Text style={styles.error}>*</Text>}
           </Text>
           <TextInput
-            style={[styles.fieldInput, errors.nameProduct && styles.inputError]}
-            value={nameProduct}
-            onChangeText={setNameProduct}
-            placeholder="-"
-            placeholderTextColor="#888"
-          />
+          style={[styles.fieldInput, errors.nameProduct && styles.inputError]}
+          value={nameProduct}
+          onChangeText={setNameProduct}
+          onFocus={() => {
+            setShowCategoryDropdown(false);
+            setShowUnitDropdown(false);
+          }}
+          placeholder="-"
+          placeholderTextColor="#888"
+        />
 
           <Text style={styles.fieldLabel}>
             Category {errors.category && <Text style={styles.error}>*</Text>}
@@ -268,7 +272,11 @@ export function IngredientForm({
           <View style={styles.dropdownWrapper}>
             <TouchableOpacity
               style={[styles.dropdown, errors.category && styles.inputError]}
-              onPress={() => setShowCategoryDropdown(!showCategoryDropdown)}
+              onPress={() => {
+                Keyboard.dismiss(); 
+                setShowCategoryDropdown((prev) => !prev);
+                setShowUnitDropdown(false); 
+              }}
             >
               <Text style={styles.dropdownText}>{category || "-"}</Text>
             </TouchableOpacity>

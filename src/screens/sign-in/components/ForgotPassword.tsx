@@ -46,7 +46,7 @@ export function ForgotPassword({ onBack }: ForgotPasswordProps) {
 
       <View style={styles.inputGroup}>
         <Text style={styles.label}>
-          Email {errors.email && <Text style={styles.error}>*</Text>}
+          Email {errors.email && <Text style={styles.error}>* Please enter a valid email </Text>}
         </Text>
         <TextInput
           value={email}
