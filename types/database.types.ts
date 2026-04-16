@@ -61,7 +61,7 @@ export type Database = {
           grams_per_each: number
           image: string | null
           in_stock: boolean | null
-          ingredient_id: number
+          ingredient_id: string
           low_stock_threshold_grams: number | null
           name_normalized: string
           name_product: string
@@ -76,7 +76,7 @@ export type Database = {
           grams_per_each: number
           image?: string | null
           in_stock?: boolean | null
-          ingredient_id?: never
+          ingredient_id?: string
           low_stock_threshold_grams?: number | null
           name_normalized: string
           name_product: string
@@ -91,7 +91,7 @@ export type Database = {
           grams_per_each?: number
           image?: string | null
           in_stock?: boolean | null
-          ingredient_id?: never
+          ingredient_id?: string
           low_stock_threshold_grams?: number | null
           name_normalized?: string
           name_product?: string

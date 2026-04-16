@@ -13,21 +13,24 @@ CREATE TABLE users (
 );
 
 CREATE TABLE pantry_ingredients (
-    ingredient_id INT GENERATED ALWAYS AS IDENTITY,
+    ingredient_id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     pantry_id UUID NOT NULL REFERENCES pantries(pantry_id),
     spoonacular_id TEXT NOT NULL,
     name_normalized TEXT NOT NULL,
     name_product TEXT NOT NULL,
     category TEXT NOT NULL,
-    amount_grams INT NOT NULL,
-    low_stock_threshold_grams INT,
-    in_stock BOOLEAN DEFAULT TRUE,
-    grams_per_each INT NOT NULL,
+    quantity DECIMAL,
+    low_stock_threshold DECIMAL,
+    in_stock BOOLEAN GENERATED ALWAYS AS (
+        CASE
+            WHEN amount_grams IS NOT NULL THEN amount_grams > COALESCE(low_stock_threshold, 0)
+            WHEN quantity IS NOT NULL THEN quantity > COALESCE(low_stock_threshold, 0)
+            ELSE FALSE
+        END
+    ) STORED,
     display_unit TEXT NOT NULL,
     expiration_date DATE,
-    image TEXT DEFAULT NULL,
-
-    PRIMARY KEY (ingredient_id, pantry_id)
+    image TEXT DEFAULT NULL
 );
 
 CREATE TABLE user_preferences (

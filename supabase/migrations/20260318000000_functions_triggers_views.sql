@@ -25,31 +25,6 @@ EXECUTE FUNCTION public.handle_new_user();
 
 -----------------------------------------------------------
 
--- Trigger: Sets the threshold value the system uses to determine whether an ingredient is low/out-of-stock
-CREATE OR REPLACE FUNCTION public.set_default_threshold()
-RETURNS TRIGGER AS $$
-BEGIN
-  IF NEW.low_threshold_grams IS NULL THEN
-    NEW.low_threshold_grams := CASE NEW.category
-     -- fixme: default values of zero need to be set to reasonable thresholds
-      WHEN 'Produce' THEN 0
-      WHEN 'Meat' THEN 0
-      WHEN 'Liquid' THEN 0
-      WHEN 'Canned' THEN 0
-      WHEN 'Dry' THEN 0
-      ELSE 0
-END;
-END IF;
-RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER set_ingredient_threshold
-BEFORE INSERT ON public.pantry_ingredients
-FOR EACH ROW EXECUTE FUNCTION public.set_default_threshold();
-
------------------------------------------------------------
-
 -- Trigger: After modification to pantry, update the last_updated:Date attribute
 CREATE OR REPLACE FUNCTION public.update_pantry_last_updated()
 RETURNS TRIGGER AS $$
@@ -67,4 +42,3 @@ FOR EACH ROW EXECUTE FUNCTION public.update_pantry_last_updated();
 
 -----------------------------------------------------------
 
--- Trigger: upon insert or update to ingredients.quantity or ingredients.weight_grams, automatically recalculate the other field to match using the grams_per_each field
