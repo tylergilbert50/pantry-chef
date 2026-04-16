@@ -1,6 +1,6 @@
 import { supabase } from "../lib/supabase";
 import { Database } from "../../types/database.types";
-import { searchIngredientImage } from "../screens/barcode/components/spoonacularApi";
+import { searchIngredientImage } from "./apiService";
 
 type IngredientInsert =
   Database["public"]["Tables"]["pantry_ingredients"]["Insert"];

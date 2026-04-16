@@ -12,7 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { useIsFocused } from "@react-navigation/native";
 import colors from "../../theme/colors";
-import { lookupBarcode, SpoonacularProduct } from "./components/spoonacularApi";
+import { lookupBarcode, SpoonacularProduct } from "../../services/apiService";
 import { IngredientForm } from "./components/IngredientForm";
 
 const SCAN_BOX_WIDTH = 280;

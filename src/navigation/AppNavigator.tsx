@@ -50,7 +50,7 @@ export function AppNavigator() {
         options={{
           tabBarIcon: ({ focused }) => (
             <TabIcon
-              source={require("../../assets/icons/navbar/pantry-icon.png")}
+              source={require("@assets/icons/navbar/pantry-icon.png")}
               focused={focused}
             />
           ),
