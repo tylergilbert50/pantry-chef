@@ -15,8 +15,9 @@ export interface SpoonacularProduct {
     aisle?: string;
 }
 
-type SpoonacularIngredient = {
+export type SpoonacularIngredient = {
     name: string;
+    original: string;
     image: string;
     id: number;
     aisle: string;
@@ -25,11 +26,14 @@ type SpoonacularIngredient = {
 
 export type SpoonacularRecipe = {
     id: number;
+    title: string;
     image: string;
     imageTYpe: string;
     likes: number;
     missedIngredientCount: number;
     missedIngredients: Array<SpoonacularIngredient>;
+    usedIngredientCount: number;
+    usedIngredients: Array<SpoonacularIngredient>;
 }
 
 export type SpoonacularRecipeInformation = {
@@ -178,15 +182,15 @@ const fetchImage = async (name: string): Promise<string | undefined> => {
 
 const fetchRecipes = async (ingredients: string, numberOfRecipes: number, ranking: number, ignorePantry: boolean): Promise<SpoonacularRecipeList> => {
     console.log("Attempting to fetch recipes...");
-    const result = await fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${encodeURIComponent(ingredients)}&number=${numberOfRecipes}&ranking=${ranking}&ignorePantry=${encodeURIComponent(ignorePantry)}`);
+    const result = await fetch(`https://api.spoonacular.com/recipes/findByIngredients?ingredients=${encodeURIComponent(ingredients)}&number=${numberOfRecipes}&ranking=${ranking}&ignorePantry=${encodeURIComponent(ignorePantry)}&apiKey=${SPOONACULAR_API_KEY}`);
     if (!result.ok) throw new Error("Network response wasn't okay");
     const data: SpoonacularRecipeList = await result.json();
     return data;
 }
 
 const fetchRecipeInformation = async (id: number, includeNutrition: boolean): Promise<SpoonacularRecipeInformation> => {
-    console.log("Attempting to get recipe information...");
-    const result = await fetch(`https://api.spoonacular.com/recipes/${id}/information?includeNutrition=${includeNutrition}`);
+    console.log("Attempting to fetch recipe information...");
+    const result = await fetch(`https://api.spoonacular.com/recipes/${id}/information?includeNutrition=${includeNutrition}&apiKey=${SPOONACULAR_API_KEY}`);
     if (!result.ok) throw new Error("Network response wasn't okay");
     const data: SpoonacularRecipeInformation = await result.json();
     return data;
@@ -194,7 +198,8 @@ const fetchRecipeInformation = async (id: number, includeNutrition: boolean): Pr
 
 const fetchRecipeInstructions = async (id: number): Promise<SpoonacularRecipeInstructions> => {
     console.log("Attempting to get recipe instructions...");
-    const result = await fetch(`https://api.spoonacular.com/recipes/${id}/analyzedInstructions`);
+    const result = await fetch(`https://api.spoonacular.com/recipes/${id}/analyzedInstructions?apiKey=${SPOONACULAR_API_KEY}`);
+    console.log(result);
     if (!result.ok) throw new Error("Network response wasn't okay");
     const data: SpoonacularRecipeInstructions = await result.json();
     return data;
