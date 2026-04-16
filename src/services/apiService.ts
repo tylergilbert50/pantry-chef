@@ -102,8 +102,8 @@ export type SpoonacularRecipeInstructions = {
 } 
 
 export type SpoonacularRecipeList = Array<SpoonacularRecipe>;
-
 export type SpoonacularIngredientList = Array<SpoonacularIngredient>;
+export type SpoonacularRecipeInformationList = Array<SpoonacularRecipeInformation>;
 
 export function mapAisleToCategory(aisle?: string): string {
     if (!aisle) return "Other";
@@ -196,6 +196,14 @@ const fetchRecipeInformation = async (id: number, includeNutrition: boolean): Pr
     return data;
 }
 
+const fetchRecipeInformationBulk = async (ids: number[], includeNutrition: boolean): Promise<SpoonacularRecipeInformationList> => {
+    console.log("Attempting to fetch recipe information in bulk...");
+    const result = await fetch(`https://api.spoonacular.com/recipes/informationBulk?includeNutirition=${encodeURIComponent(includeNutrition)}&ids=${ids.join(",")}&apiKey=${SPOONACULAR_API_KEY}`);
+    if (!result.ok) throw new Error("Network response wasn't okay");
+    const data: SpoonacularRecipeInformationList = await result.json();
+    return data;
+}
+
 const fetchRecipeInstructions = async (id: number): Promise<SpoonacularRecipeInstructions> => {
     console.log("Attempting to get recipe instructions...");
     const result = await fetch(`https://api.spoonacular.com/recipes/${id}/analyzedInstructions?apiKey=${SPOONACULAR_API_KEY}`);
@@ -251,6 +259,14 @@ export async function getRecipeInstructions(id: number): Promise<SpoonacularReci
     const data = await queryClient.fetchQuery({
         queryKey: ['recipeInstructionsId', id], // Unique cache key
         queryFn: () => fetchRecipeInstructions(id),
+    });
+    return data;
+}
+
+export async function getRecipeInformationBulk(ids: number[], includeNutrition: boolean): Promise<SpoonacularRecipeInformationList> {
+    const data = await queryClient.fetchQuery({
+        queryKey: ['recipeInstructionsId', ids, 'includeNutrition', includeNutrition], // Unique cache key
+        queryFn: () => fetchRecipeInformationBulk(ids, includeNutrition),
     });
     return data;
 }

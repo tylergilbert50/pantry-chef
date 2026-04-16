@@ -58,7 +58,7 @@ export function Recipes() {
   const [data, setData] = useState(createInitialProps);
   useEffect(() => {
     const fetchRecipe = async () => {
-      const testId: number = 4632;// this recipe has issues: 324694;
+      const testId: number = 324694;
       const recipe: SpoonacularRecipeInformation = await getRecipeInformation(testId, false);
       if (recipe != null) {
         setData({
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     height: 300,
     width: "100%",
     position: "absolute",
-    top: 0
+    top: 50,
   },
   scrollView: {
     position: "relative",
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
   },
   statusBarBackground: {
     position: "relative",
-    height: 0,
+    height: 50,
     backgroundColor: "orange",
     zIndex: 5
   }
