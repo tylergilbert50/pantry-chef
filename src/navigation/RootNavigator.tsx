@@ -68,6 +68,11 @@ function RootLayout() {
 
   return (
     <NavigationContainer>
+      <Onboarding onFinish={() => {setShowOnboarding(false)}}/>
+    </NavigationContainer>
+  );
+  /*
+
       {!session ? (
         <SignInNavigator />
       ) : showOnboarding ? (
@@ -79,8 +84,7 @@ function RootLayout() {
       ) : (
         <AppNavigator />
       )}
-    </NavigationContainer>
-  );
+  */
 }
 
 export function RootNavigator() {

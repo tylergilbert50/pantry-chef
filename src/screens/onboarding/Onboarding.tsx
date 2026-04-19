@@ -17,6 +17,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "../../lib/supabase";
 import colors from "../../theme/colors";
+import LottieView from 'lottie-react-native';
 
 const { width, height } = Dimensions.get("window");
 
@@ -38,9 +39,9 @@ const slides: Slide[] = [
     title: "PantryChef",
     subtitle: "Cook what you own. Save what you earn.",
     message:
-      "The average household waste over\n1 BILLION meals worth of food\ndaily.",
-    secondMessage: "That is roughly 1.3 meals every\nday being wasted.\n ",
-    image: require("../../../assets/images/onboarding/onboarding-slide-1.png"),
+      "29% of food produced in the U.S. goes unsold or uneaten annually",
+    secondMessage: "\nThat’s over 70 million tons of food each year",
+    image: require("@assets/images/onboarding/trash-can-animation.json"),
   },
   {
     id: "2",
@@ -49,7 +50,7 @@ const slides: Slide[] = [
     message:
       "By throwing away less food, your\n household can save $52 per week.",
     secondMessage: "That's over $2,500 a year.\n ",
-    image: require("../../../assets/images/onboarding/onboarding-slide-2.png"),
+    image: require("@assets/images/onboarding/piggy-bank-animation.json"),
   },
   {
     id: "3",
@@ -60,6 +61,53 @@ const slides: Slide[] = [
     hasNameInput: true,
   },
 ];
+
+export function PingPongLottie({ source }: { source: any }) {
+    const animationRef = useRef<LottieView>(null);
+    const [forward, setForward] = useState(true);
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        if (animationRef === null) return;
+        if (forward) {
+            animationRef.current?.play(0, 150); // Forward
+        } else {
+            animationRef.current?.play(150, 0); // Backward
+        }
+    }, [forward]);
+    const handleFinish = () => {
+        // Clear the existing timeout before setting a new timeout
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+        if (forward) {
+            setForward(!forward);
+            return;
+        }
+
+        timeoutRef.current = setTimeout(() => {
+            setForward((prev) => {
+                return !prev;
+            });
+        }, 1000);
+    };
+    useEffect(() => {
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+        };
+    }, []);
+    return (
+        <LottieView
+            ref={animationRef}
+            source={source}
+            loop={false}
+            onAnimationFinish={handleFinish}
+            style={{ width: 400, height: 400 }}
+        />
+    );
+}
 
 export const Onboarding = ({ onFinish }: { onFinish: () => void }) => {
   const flatListRef = useRef<FlatList>(null);
@@ -211,14 +259,27 @@ export const Onboarding = ({ onFinish }: { onFinish: () => void }) => {
             </View>
           </View>
         </View>
-      ) : (
+      ) : item.id==="1" ? (
+          <View style={styles.imageContainer}>
+            <PingPongLottie source={item.image}/>
+          </View>
+      ) : item.id==="2" ? (
         <View style={styles.imageContainer}>
-          <Image
+          <LottieView
             source={item.image}
-            style={styles.image}
-            resizeMode="contain"
+            style={{width: 400, height: 400}} 
+            autoPlay={true}
+            loop
           />
         </View>
+      ) : (
+          <View style={styles.imageContainer}>
+            <Image
+              source={item.image}
+              style={styles.image}
+              resizeMode="contain"
+            />
+          </View>
       )}
 
       <View style={styles.messageContainer}>
@@ -256,6 +317,7 @@ export const Onboarding = ({ onFinish }: { onFinish: () => void }) => {
   const renderSlide = ({ item, index }: { item: Slide; index: number }) => {
     const isActive = index === currentIndex;
     const isSlideThree = item.id === "3";
+    const isSlideOne = item.id === "1";
 
     if (isSlideThree) {
       return (
