@@ -51,6 +51,10 @@ function RootLayout() {
     init();
   }, [session, loading]);
 
+  function handleRestartOnboarding() {
+    setShowOnboarding(true);
+  }
+
   if (!ready) {
     return (
       <View
@@ -77,7 +81,7 @@ function RootLayout() {
           }}
         />
       ) : (
-        <AppNavigator />
+        <AppNavigator onRestartOnboarding={handleRestartOnboarding} />
       )}
     </NavigationContainer>
   );

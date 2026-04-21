@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -16,27 +16,33 @@ const redirectUrl = Linking.createURL("callback");
 type Props = {
   onFocusEmail: () => void;
   setIsEditingEmail: (value: boolean) => void;
+  onRestartOnboarding: () => void;
 };
 
-export function AccountCard({ onFocusEmail, setIsEditingEmail }: Props) {
+export function AccountCard({
+  onFocusEmail,
+  setIsEditingEmail,
+  onRestartOnboarding,
+}: Props) {
   const [showEmailInput, setShowEmailInput] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setIsEditingEmail(showEmailInput);
-  }, [showEmailInput]);
+  }, [showEmailInput, setIsEditingEmail]);
 
   function toggleEmailInput() {
     setShowEmailInput((prev) => !prev);
   }
 
   async function handleChangeEmail() {
-    if (!newEmail) return;
+    if (!newEmail.trim()) return;
+
     setLoading(true);
 
     const { error } = await supabase.auth.updateUser(
-      { email: newEmail },
+      { email: newEmail.trim() },
       { emailRedirectTo: redirectUrl },
     );
 
@@ -52,6 +58,41 @@ export function AccountCard({ onFocusEmail, setIsEditingEmail }: Props) {
     }
 
     setLoading(false);
+  }
+
+  async function handleResetProfile() {
+    setLoading(true);
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      Alert.alert("Error", userError?.message ?? "No user found.");
+      setLoading(false);
+      return;
+    }
+
+    const { error } = await supabase
+      .from("users")
+      .update({
+        first_name: "",
+        last_name: "",
+      })
+      .eq("user_id", user.id);
+
+    if (error) {
+      Alert.alert("Error", error.message);
+      setLoading(false);
+      return;
+    }
+
+    setShowEmailInput(false);
+    setNewEmail("");
+    setIsEditingEmail(false);
+    setLoading(false);
+    onRestartOnboarding();
   }
 
   async function handleLogout() {
@@ -91,6 +132,16 @@ export function AccountCard({ onFocusEmail, setIsEditingEmail }: Props) {
         <Text style={styles.cardText}>Change Password</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity
+        style={styles.row}
+        onPress={handleResetProfile}
+        disabled={loading}
+      >
+        <Text style={styles.resetText}>
+          {loading ? "Restarting..." : "Restart Onboarding"}
+        </Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.row} onPress={handleLogout}>
         <Text style={styles.logout}>Log Out</Text>
       </TouchableOpacity>
@@ -120,6 +171,11 @@ const styles = StyleSheet.create({
   logout: {
     fontSize: 16,
     color: "#EF4444",
+    fontWeight: "500",
+  },
+  resetText: {
+    fontSize: 16,
+    color: "#F59E0B",
     fontWeight: "500",
   },
   inputWrapper: {
