@@ -14,7 +14,11 @@ import { useUser } from "../../context/UserContext";
 import { PreferencesCard } from "../../screens/account/components/PreferencesCard";
 import { AccountCard } from "../../screens/account/components/AccountCard";
 
-export function Account() {
+type AccountProps = {
+  onRestartOnboarding: () => void;
+};
+
+export function Account({ onRestartOnboarding }: AccountProps) {
   const { profile, session } = useUser();
   const scrollRef = useRef<ScrollView>(null);
 
@@ -93,6 +97,7 @@ export function Account() {
           <AccountCard
             onFocusEmail={scrollUp}
             setIsEditingEmail={setIsEditingEmail}
+            onRestartOnboarding={onRestartOnboarding}
           />
         </ScrollView>
       </View>
@@ -127,7 +132,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   topSpacer: {
-    height: 170,
+    height: 155,
   },
   profileCard: {
     flexDirection: "row",

@@ -1,6 +1,3 @@
-// AppNavigator defines the main app navigation stack
-// Rendered after the user signs in
-
 import React from "react";
 import { Image, View, StyleSheet } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -25,17 +22,20 @@ type TabIconProps = {
   focused: boolean;
 };
 
+type AppNavigatorProps = {
+  onRestartOnboarding: () => void;
+};
+
 function TabIcon({ source, focused }: TabIconProps) {
   return (
     <View style={styles.iconWrapper}>
       <Image source={source} resizeMode="contain" style={styles.icon} />
-
       {focused && <View style={styles.indicator} />}
     </View>
   );
 }
 
-export function AppNavigator() {
+export function AppNavigator({ onRestartOnboarding }: AppNavigatorProps) {
   return (
     <Tab.Navigator
       screenOptions={{
@@ -85,7 +85,6 @@ export function AppNavigator() {
 
       <Tab.Screen
         name="Account"
-        component={Account}
         options={{
           tabBarIcon: ({ focused }) => (
             <TabIcon
@@ -94,7 +93,9 @@ export function AppNavigator() {
             />
           ),
         }}
-      />
+      >
+        {() => <Account onRestartOnboarding={onRestartOnboarding} />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }
@@ -104,7 +105,6 @@ const styles = StyleSheet.create({
     height: 80,
     backgroundColor: colors.primary,
   },
-
   iconWrapper: {
     width: 60,
     height: 60,
@@ -113,12 +113,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     position: "relative",
   },
-
   icon: {
     width: 30,
     height: 30,
   },
-
   indicator: {
     position: "absolute",
     bottom: 0,
