@@ -72,7 +72,7 @@ export function RecipesList({ mode }: RecipesListProps) {
           ),
     );
 
-    await upsertRecipe(recipe.recipe_id, userId, {
+    await upsertRecipe({
       ...recipe,
       saved: !recipe.saved,
     });
