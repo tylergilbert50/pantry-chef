@@ -22,7 +22,7 @@
     "@supabase/supabase-js": "^2.97.0",
     "@tanstack/react-query": "^5.97.0",
     "babel-preset-expo": "~54.0.10",
-    "convert-units": "^2.3.4",
+    "convert": "^7.0.0",
     "expo": "~54.0.33",
     "expo-auth-session": "~7.0.10",
     "expo-camera": "~17.0.10",
@@ -49,6 +49,7 @@
     "vector-icons": "^0.1.0"
   },
   "devDependencies": {
+    "@types/convert-units": "^2.3.12",
     "@types/react": "~19.1.0",
     "babel-plugin-module-resolver": "^5.0.3",
     "supabase": "^2.76.16",

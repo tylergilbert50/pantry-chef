@@ -1,13 +1,20 @@
 import { Database } from "../../types/database.types";
 import { queryClient } from "../../App";
-import configureMeasurements from 'convert-units';
-import allMeasures from 'convert-units/definitions/all';import convert from convert-units;
+import convert from 'convert';
 
 export type IngredientInsert =
     Database["public"]["Tables"]["pantry_ingredients"]["Insert"];
 
 const SPOONACULAR_API_KEY = process.env.EXPO_PUBLIC_SPOONACULAR_API_KEY;
 const SPOONACULAR_CDN = "https://img.spoonacular.com/ingredients_250x250";
+
+type Unit =
+  | 'g' | 'kg' | 'oz' | 'lb'
+  | 'ml' | 'l' | 'tsp' | 'tbsp' | 'cup';
+const recipeUnits = {
+  volume: ['tsp', 'tbsp', 'cup', 'ml', 'l'],
+  mass: ['g', 'kg', 'oz', 'lb'],
+};
 
 export interface SpoonacularProduct {
     title: string;
@@ -320,6 +327,22 @@ export async function getRecipeInformationBulk(ids: number[], includeNutrition: 
     return data;
 }
 
+function parseUnit(input: string): Unit {
+  const normalized = input.trim().toLowerCase();
+
+  const map: Record<string, Unit> = {
+    grams: 'g',
+    gram: 'g',
+    g: 'g',
+    kilograms: 'kg',
+    kg: 'kg',
+    cups: 'cup',
+    cup: 'cup',
+  };
+  const result = map[normalized];
+  return result;
+}
+
 export async function matchRecipeIngredients(ingredients: SpoonacularExtendedIngredientList, pantryIngredients: PantryIngredients): Promise<IngredientMatches> {
     // Loop over ingredients
     //  Attempt to find a match from the pantry ingredients
@@ -337,14 +360,14 @@ export async function matchRecipeIngredients(ingredients: SpoonacularExtendedIng
             amountUnit = recipeIngredient.unit;
             if (recipeIngredient.name === pantryIngredient.name) {
                 // At this point, we've found the ingredient we need, now to check if the necessary amount is available.
-                if (convert().from(recipeIngredient.unit).possibilities().indexOf("g")>=0 && convert().from(pantryIngredient.unit).possibilities().indexOf("g") >= 0) {
+                if (recipeUnits.mass.indexOf(recipeIngredient.unit) >= 0 && recipeUnits.mass.indexOf(pantryIngredient.unit) >= 0) {
                     // Normalize to grams
-                    recipeIngredientAmount = convert(recipeIngredient.amount).from(recipeIngredient.unit).to("g");
-                    pantryIngredientAmount = convert(pantryIngredient.amount).from(pantryIngredient.unit).to("g");
-                } else if (convert().from(recipeIngredient.unit).possibilities().indexOf("ml")>=0 && convert().from(pantryIngredient.unit).possibilities().indexOf("ml") >= 0) {
+                    recipeIngredientAmount = convert(recipeIngredient.amount, parseUnit(recipeIngredient.unit)).to("g");
+                    pantryIngredientAmount = convert(recipeIngredient.amount, parseUnit(pantryIngredient.unit)).to("g");
+                } else if (recipeUnits.volume.indexOf(recipeIngredient.unit) >= 0 && recipeUnits.volume.indexOf(pantryIngredient.unit) >= 0) {
                     // Normalize to milliliters
-                    recipeIngredientAmount = convert(recipeIngredient.amount).from(recipeIngredient.unit).to("ml");
-                    pantryIngredientAmount = convert(pantryIngredient.amount).from(pantryIngredient.unit).to("ml");
+                    recipeIngredientAmount = convert(recipeIngredient.amount, parseUnit(recipeIngredient.unit)).to("ml");
+                    pantryIngredientAmount = convert(recipeIngredient.amount, parseUnit(pantryIngredient.unit)).to("ml");
                 } else if (recipeIngredient.unit == "ea" && pantryIngredient.unit == "ea") {
                     // Continue with "ea" (each)
                     recipeIngredientAmount = recipeIngredient.amount;
