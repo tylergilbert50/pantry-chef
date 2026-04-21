@@ -29,10 +29,11 @@ function createInitialProps(): RecipeProps {
 }
 
 const IngredientList = ({ ingredients }: {ingredients: SpoonacularIngredientList}) => {
+
   return (
       <View>
           {ingredients.map((ingredient) => (
-              <View key={ingredient.id}>
+              <View key={ingredient.id.toString()+" "+ingredient.name+" "+ingredient.original}>
                   <Unorderedlist style={styles.bulletText}>
                       <Text style={styles.ingredientText}>{ingredient.original}</Text>
                   </Unorderedlist>
@@ -61,17 +62,23 @@ export function Recipes() {
       const testId: number = 324694;
       const recipe: SpoonacularRecipeInformation = await getRecipeInformation(testId, false);
       if (recipe != null) {
+        let textIntro;
+        if (recipe.summary.includes(".")) {
+          textIntro = stripHtml(recipe.summary.split(".")[0]).result + ".";
+        } else {
+          textIntro = recipe.summary;
+        }
         setData({
           title: recipe.title,
           recipeType: recipe.dishTypes.join(" / "),
           detailCards: {"Total time": recipe.readyInMinutes.toString() + " min.", "Servings": recipe.servings.toString()},
-          textIntro: stripHtml(recipe.summary.split(".")[0]).result + ".", // TODO: Fix this to work on strings without .
+          textIntro: textIntro,
           ingredients: recipe.extendedIngredients,
           bodyText: "",
           heroImageUri: recipe.image,
         });
       }
-      /*const instructions: SpoonacularRecipeInstructions = await getRecipeInstructions(testId);
+      const instructions: SpoonacularRecipeInstructions = await getRecipeInstructions(testId);
       if (instructions != null) {
         setData({
           ...data,
@@ -79,7 +86,7 @@ export function Recipes() {
         });
         console.log("Got instruction data");
         console.log(instructions);
-      }*/
+      }
     }
     fetchRecipe();
   }, []);
@@ -118,6 +125,7 @@ export function Recipes() {
           <Text style={styles.header}>
             Directions
           </Text>
+
           <Text style={styles.bodyText}>
             {data.bodyText}
           </Text>
@@ -126,7 +134,7 @@ export function Recipes() {
     </View>
   );
 }
-// <NumberedList items={ data.instructions?.steps?.map(step => step.step).filter(Boolean) ?? []}></NumberedList>
+//           <NumberedList items={ data.instructions?.steps?.map(step => step.step).filter(Boolean) ?? []}></NumberedList>
 
 const styles = StyleSheet.create({
   container: {

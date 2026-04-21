@@ -24,6 +24,30 @@ export type SpoonacularIngredient = {
     possibleUnits: Array<string>;
 }
 
+export type SpoonacularExtendedIngredient = {
+    aisle: string;
+    amount: number;
+    id: number;
+    image: string;
+    measures: {
+        metric: {
+            amount: number;
+            unitLong: string;
+            unitShort: string;
+        }
+        us: {
+            amount: number;
+            unitLong: string;
+            unitShort: string;
+        }
+    }
+    meta: Array<string>;
+    name: string;
+    original: string;
+    originalName: string;
+    unit: string;
+}
+
 export type SpoonacularRecipe = {
     id: number;
     title: string;
@@ -72,7 +96,7 @@ export type SpoonacularRecipeInformation = {
     whole30: boolean;
     weightWatcherSmartPoints: number;
     dishTypes: Array<string>;
-    extendedIngredients: SpoonacularIngredientList;
+    extendedIngredients: SpoonacularExtendedIngredientList;
     summary: string;
 
 }
@@ -103,6 +127,7 @@ export type SpoonacularRecipeInstructions = {
 
 export type SpoonacularRecipeList = Array<SpoonacularRecipe>;
 export type SpoonacularIngredientList = Array<SpoonacularIngredient>;
+export type SpoonacularExtendedIngredientList = Array<SpoonacularExtendedIngredient>;
 export type SpoonacularRecipeInformationList = Array<SpoonacularRecipeInformation>;
 
 export function mapAisleToCategory(aisle?: string): string {
