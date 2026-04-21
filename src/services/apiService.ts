@@ -24,6 +24,28 @@ export type SpoonacularIngredient = {
     possibleUnits: Array<string>;
 }
 
+export type InputIngredient = {
+    name: string;
+    original: string;
+    image: string;
+    id: number;
+    unit: string;
+    amount: number;
+}
+
+export type IngredientMatch = {
+    ingredient: SpoonacularExtendedIngredient;
+    match: {
+        completeMatch: boolean;
+        missingAmount: number;
+        missingUnit: string;
+    }
+}
+
+export type IngredientMatches = Array<IngredientMatch>;
+
+export type PantryIngredients = Array<InputIngredient>;
+
 export type SpoonacularExtendedIngredient = {
     aisle: string;
     amount: number;
@@ -294,4 +316,15 @@ export async function getRecipeInformationBulk(ids: number[], includeNutrition: 
         queryFn: () => fetchRecipeInformationBulk(ids, includeNutrition),
     });
     return data;
+}
+
+export async function matchRecipeIngredients(ingredients: SpoonacularExtendedIngredientList, pantryIngredients: PantryIngredients): Promise<IngredientMatches> {
+    // Loop over ingredients
+    //  Attempt to find a match from the pantry ingredients
+    //  Create a new IngredientMatch object for each ingredient
+    ingredients.forEach((ingredient) => {
+        // TODO
+
+    });
+    return [];
 }
