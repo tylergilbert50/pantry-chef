@@ -1,5 +1,5 @@
 import { Database } from "../../types/database.types";
-import { queryClient } from "../../App";
+import { queryClient } from "../lib/queryClient";
 
 export type IngredientInsert =
     Database["public"]["Tables"]["pantry_ingredients"]["Insert"];
