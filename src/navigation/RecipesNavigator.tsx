@@ -1,14 +1,15 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { RecipeCatalog } from "./RecipeCatalog";
-import { RecipesList } from "./RecipesList";
-import { RecipeDetail } from "./RecipeDetail";
+
+import { Recipes } from "../screens/recipes/Recipes";
+import { RecipesList } from "../screens/recipes/RecipesList";
+import RecipeReader from "../screens/recipes/components/RecipeReader";
 
 export type RecipesStackParamList = {
-  RecipeCatalog: undefined;
+  RecipesHome: undefined;
   SavedRecipes: undefined;
   RecipeHistory: undefined;
-  RecipeDetail: undefined;
+  RecipeReader: { recipeId: string };
 };
 
 const Stack = createNativeStackNavigator<RecipesStackParamList>();
@@ -16,14 +17,14 @@ const Stack = createNativeStackNavigator<RecipesStackParamList>();
 export function RecipesNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="RecipeCatalog" component={RecipeCatalog} />
+      <Stack.Screen name="RecipesHome" component={Recipes} />
       <Stack.Screen name="SavedRecipes">
         {() => <RecipesList mode="saved" />}
       </Stack.Screen>
       <Stack.Screen name="RecipeHistory">
         {() => <RecipesList mode="history" />}
       </Stack.Screen>
-      <Stack.Screen name="RecipeDetail" component={RecipeDetail} />
+      <Stack.Screen name="RecipeReader" component={RecipeReader} />
     </Stack.Navigator>
   );
 }

@@ -7,24 +7,26 @@ type Props = {
   value: string;
   onChange: (text: string) => void;
   onFilterPress?: () => void;
+  placeholder?: string;
 };
 
-export function PantrySearchBar({ value, onChange, onFilterPress }: Props) {
+export function PantrySearchBar({
+  value,
+  onChange,
+  onFilterPress,
+  placeholder,
+}: Props) {
   return (
     <View style={styles.container}>
-      {/* Left Icon */}
       <Ionicons name="search" size={20} color="#999" />
 
-      {/* Input */}
       <TextInput
-        style={styles.input}
-        placeholder="Search ingredients..."
-        placeholderTextColor="#999"
         value={value}
         onChangeText={onChange}
+        placeholder={placeholder ?? "Search for ingredients"}
+        style={styles.input}
       />
 
-      {/* Filter Button */}
       <TouchableOpacity onPress={onFilterPress}>
         <Ionicons name="options-outline" size={20} color={colors.primary} />
       </TouchableOpacity>

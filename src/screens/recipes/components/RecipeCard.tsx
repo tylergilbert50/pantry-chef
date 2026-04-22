@@ -1,100 +1,61 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import colors from "../../../theme/colors";
 
-type RecipeCardProps = {
-  name: string;
-  saved: boolean;
-  madeOn?: string | null;
-  onToggleSave: () => void;
-  onPress: () => void;
+type Props = {
+  title: string;
+  mealType: string;
+  size?: "small";
+  onPress?: () => void;
 };
 
 export default function RecipeCard({
-  name,
-  saved,
-  madeOn,
-  onToggleSave,
+  title,
+  mealType,
+  size = "small",
   onPress,
-}: RecipeCardProps) {
-  const formattedDate = madeOn
-    ? new Date(madeOn).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
-    : null;
-
+}: Props) {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.iconContainer}>
-        <Ionicons name="restaurant-outline" size={28} color={colors.primary} />
-      </View>
+    <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={styles.card}>
+      <View style={styles.imagePlaceholder} />
 
-      <View style={styles.info}>
-        <Text style={styles.name} numberOfLines={1}>
-          {name}
+      <View style={styles.content}>
+        <Text numberOfLines={2} style={styles.title}>
+          {title}
         </Text>
-        {formattedDate && (
-          <Text style={styles.subText}>Made on {formattedDate}</Text>
-        )}
-      </View>
 
-      <TouchableOpacity
-        onPress={onToggleSave}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-      >
-        <Ionicons
-          name={saved ? "bookmark" : "bookmark-outline"}
-          size={24}
-          color={saved ? colors.primary : "#aaa"}
-        />
-      </TouchableOpacity>
+        <Text style={styles.mealType}>{mealType}</Text>
+      </View>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: "row",
-    alignItems: "center",
+    width: "47%",
     backgroundColor: colors.white,
-    padding: 14,
-    borderRadius: 20,
-    marginVertical: 8,
-    width: "90%",
-    alignSelf: "center",
-    shadowColor: colors.black,
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    borderRadius: 22,
+    overflow: "hidden",
+    marginBottom: 20,
   },
-  iconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 14,
-    backgroundColor: "#FFF3E0",
-    justifyContent: "center",
+  imagePlaceholder: {
+    height: 130,
+    width: "100%",
+    backgroundColor: "#CFCFCF",
+  },
+  content: {
     alignItems: "center",
-    marginRight: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
   },
-  info: {
-    flex: 1,
-  },
-  name: {
+  title: {
     fontSize: 16,
     fontWeight: "600",
-    color: colors.black,
+    textAlign: "center",
   },
-  subText: {
-    fontSize: 13,
-    color: "#666",
-    marginTop: 2,
+  mealType: {
+    fontSize: 12,
+    color: "#8F8F8F",
+    marginTop: 4,
   },
 });

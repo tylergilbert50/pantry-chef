@@ -1,15 +1,10 @@
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import colors from "../../theme/colors";
-import { RecipesStackParamList } from "./RecipesNavigator";
+import { RecipesStackParamList } from "../../navigation/RecipesNavigator";
 
 export function RecipeCatalog() {
   const navigation =

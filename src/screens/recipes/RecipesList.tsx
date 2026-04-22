@@ -16,7 +16,7 @@ import RecipeCard from "./components/RecipeCard";
 import { getRecipes, upsertRecipe } from "../../services/recipeService";
 import { useUser } from "../../context/UserContext";
 import { Database } from "../../../types/database.types";
-import { RecipesStackParamList } from "./RecipesNavigator";
+import { RecipesStackParamList } from "../../navigation/RecipesNavigator";
 
 type Recipe = Database["public"]["Tables"]["recipes"]["Row"];
 

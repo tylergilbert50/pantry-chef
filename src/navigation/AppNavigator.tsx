@@ -4,7 +4,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
 import { Barcode } from "../screens/barcode/Barcode";
 import { Pantry } from "../screens/pantry/Pantry";
-import { RecipesNavigator } from "../screens/recipes/RecipesNavigator";
+import { RecipesNavigator } from "./RecipesNavigator";
 import { Account } from "../screens/account/Account";
 import colors from "../theme/colors";
 
