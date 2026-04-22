@@ -38,7 +38,8 @@ export function Pantry() {
   const [editingItem, setEditingItem] = useState<any | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  const openSwipeable = useRef<(() => void) | null>(null);
+  const openSwipeableClose = useRef<(() => void) | null>(null);
+  const openSwipeableId = useRef<string | null>(null); // track WHICH card is open
 
   const fetchIngredients = useCallback(async () => {
     if (!pantryId) return;
@@ -110,9 +111,7 @@ export function Pantry() {
       ),
     );
 
-    await updateIngredient(id, pantryId, {
-      item_count: newCount,
-    });
+    await updateIngredient(id, pantryId, { item_count: newCount });
   };
 
   const setItemCount = async (id: number, value: number) => {
@@ -126,18 +125,18 @@ export function Pantry() {
       ),
     );
 
-    await updateIngredient(id, pantryId, {
-      item_count: newCount,
-    });
+    await updateIngredient(id, pantryId, { item_count: newCount });
   };
 
   const handleDelete = async (id: number) => {
     if (!pantryId) return;
 
+    openSwipeableClose.current = null;
+    openSwipeableId.current = null;
+
     setIngredients((prev) => prev.filter((item) => item.ingredient_id !== id));
 
     const { error } = await deleteIngredient(id, pantryId);
-
     if (error) {
       await fetchIngredients();
     }
@@ -235,8 +234,18 @@ export function Pantry() {
                 : () => setEditingItem(item)
             }
             onSwipeOpen={(close) => {
-              openSwipeable.current?.();
-              openSwipeable.current = close;
+              const id = String(item.ingredient_id);
+
+              // only close a DIFFERENT card — never close the one currently opening
+              if (
+                openSwipeableId.current !== null &&
+                openSwipeableId.current !== id
+              ) {
+                openSwipeableClose.current?.();
+              }
+
+              openSwipeableClose.current = close;
+              openSwipeableId.current = id;
             }}
           />
         )}

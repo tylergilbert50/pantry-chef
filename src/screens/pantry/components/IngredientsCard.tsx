@@ -47,14 +47,31 @@ export default function IngredientsCard({
   onSwipeOpen,
 }: IngredientCardProps) {
   const swipeableRef = useRef<Swipeable>(null);
+  const isOpen = useRef(false);
 
   const handleDelete = () => {
+    isOpen.current = false;
     swipeableRef.current?.close();
     onDelete();
   };
 
   const handleSwipeOpen = () => {
+    isOpen.current = true;
     onSwipeOpen?.(() => swipeableRef.current?.close());
+  };
+
+  const handleSwipeClose = () => {
+    isOpen.current = false;
+    // intentionally not calling swipeableRef.current?.close() here —
+    // this callback fires because Swipeable already closed itself
+  };
+
+  const handlePress = () => {
+    if (isOpen.current) {
+      swipeableRef.current?.close();
+      return;
+    }
+    onPress();
   };
 
   const renderRightActions = (
@@ -72,6 +89,8 @@ export default function IngredientsCard({
         style={styles.deleteAction}
         onPress={handleDelete}
         activeOpacity={0.8}
+        accessibilityLabel={`Delete ${name}`}
+        accessibilityRole="button"
       >
         <Animated.View
           style={[styles.deleteContent, { transform: [{ scale }] }]}
@@ -84,7 +103,13 @@ export default function IngredientsCard({
   };
 
   const cardContent = (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={handlePress}
+      activeOpacity={0.7}
+      accessibilityLabel={name}
+      accessibilityRole="button"
+    >
       {selectMode && (
         <View style={styles.checkboxContainer}>
           <Ionicons
@@ -100,6 +125,7 @@ export default function IngredientsCard({
           source={{ uri: image }}
           style={styles.image}
           resizeMode="contain"
+          onError={() => {}}
         />
       ) : (
         <View style={styles.imageFallback}>
@@ -144,6 +170,7 @@ export default function IngredientsCard({
       overshootRight={false}
       containerStyle={styles.swipeContainer}
       onSwipeableWillOpen={handleSwipeOpen}
+      onSwipeableClose={handleSwipeClose}
     >
       {cardContent}
     </Swipeable>

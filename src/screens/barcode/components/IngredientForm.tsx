@@ -137,6 +137,7 @@ export function IngredientForm({
   };
 
   const handleSave = async () => {
+    Keyboard.dismiss();
     if (!pantryId) {
       Alert.alert("Error", "No pantry found for your account.");
       return;
