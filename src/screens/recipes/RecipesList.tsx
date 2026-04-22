@@ -124,13 +124,6 @@ export function RecipesList({ mode }: RecipesListProps) {
 
       <View style={styles.topSpacer} />
 
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.goBack()}
-      >
-        <Ionicons name="arrow-back" size={22} color={colors.black} />
-      </TouchableOpacity>
-
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.recipe_id}
@@ -221,10 +214,6 @@ const styles = StyleSheet.create({
   },
   topSpacer: {
     height: 140,
-  },
-  backButton: {
-    paddingHorizontal: 20,
-    paddingBottom: 8,
   },
   listContent: {
     paddingBottom: 40,
