@@ -1,11 +1,20 @@
 import { Database } from "../../types/database.types";
-import { queryClient } from "../lib/queryClient";
+import { queryClient } from "../../App";
+import convert from 'convert';
 
 export type IngredientInsert =
     Database["public"]["Tables"]["pantry_ingredients"]["Insert"];
 
 const SPOONACULAR_API_KEY = process.env.EXPO_PUBLIC_SPOONACULAR_API_KEY;
 const SPOONACULAR_CDN = "https://img.spoonacular.com/ingredients_250x250";
+
+type Unit =
+  | 'g' | 'kg' | 'oz' | 'lb'
+  | 'ml' | 'l' | 'tsp' | 'tbsp' | 'cup';
+const recipeUnits = {
+  volume: ['tsp', 'tbsp', 'cup', 'ml', 'l'],
+  mass: ['g', 'kg', 'oz', 'lb'],
+};
 
 export interface SpoonacularProduct {
     title: string;
@@ -22,6 +31,52 @@ export type SpoonacularIngredient = {
     id: number;
     aisle: string;
     possibleUnits: Array<string>;
+}
+
+export type InputIngredient = {
+    name: string;
+    original: string;
+    image: string;
+    id: number;
+    unit: string;
+    amount: number;
+}
+
+export type IngredientMatch = {
+    ingredient: SpoonacularExtendedIngredient;
+    match: {
+        completeMatch: boolean;
+        missingAmount: number;
+        missingUnit: string;
+    }
+}
+
+export type IngredientMatches = Array<IngredientMatch>;
+
+export type PantryIngredients = Array<InputIngredient>;
+
+export type SpoonacularExtendedIngredient = {
+    aisle: string;
+    amount: number;
+    id: number;
+    image: string;
+    measures: {
+        metric: {
+            amount: number;
+            unitLong: string;
+            unitShort: string;
+        }
+        us: {
+            amount: number;
+            unitLong: string;
+            unitShort: string;
+        }
+    }
+    meta: Array<string>;
+    name: string;
+    original: string;
+    originalName: string;
+    unit: string;
 }
 
 export type SpoonacularRecipe = {
@@ -72,7 +127,7 @@ export type SpoonacularRecipeInformation = {
     whole30: boolean;
     weightWatcherSmartPoints: number;
     dishTypes: Array<string>;
-    extendedIngredients: SpoonacularIngredientList;
+    extendedIngredients: SpoonacularExtendedIngredientList;
     summary: string;
 
 }
@@ -103,6 +158,7 @@ export type SpoonacularRecipeInstructions = {
 
 export type SpoonacularRecipeList = Array<SpoonacularRecipe>;
 export type SpoonacularIngredientList = Array<SpoonacularIngredient>;
+export type SpoonacularExtendedIngredientList = Array<SpoonacularExtendedIngredient>;
 export type SpoonacularRecipeInformationList = Array<SpoonacularRecipeInformation>;
 
 export function mapAisleToCategory(aisle?: string): string {
@@ -269,4 +325,74 @@ export async function getRecipeInformationBulk(ids: number[], includeNutrition: 
         queryFn: () => fetchRecipeInformationBulk(ids, includeNutrition),
     });
     return data;
+}
+
+function parseUnit(input: string): Unit {
+  const normalized = input.trim().toLowerCase();
+
+  const map: Record<string, Unit> = {
+    grams: 'g',
+    gram: 'g',
+    g: 'g',
+    kilograms: 'kg',
+    kg: 'kg',
+    cups: 'cup',
+    cup: 'cup',
+  };
+  const result = map[normalized];
+  return result;
+}
+
+export async function matchRecipeIngredients(ingredients: SpoonacularExtendedIngredientList, pantryIngredients: PantryIngredients): Promise<IngredientMatches> {
+    // Loop over ingredients
+    //  Attempt to find a match from the pantry ingredients
+    //  Check that the total amount is available
+    //  Create a new IngredientMatch object for each ingredient
+    const matches: IngredientMatches = [];
+    ingredients.forEach((recipeIngredient) => {
+        let amountNeeded = recipeIngredient.amount;
+        let amountUnit: string;
+        let recipeIngredientAmount: number;
+        let pantryIngredientAmount: number;
+        for (let i=0; i<pantryIngredients.length; i++) {
+            let amountFound = 0;
+            const pantryIngredient = pantryIngredients[i];
+            amountUnit = recipeIngredient.unit;
+            if (recipeIngredient.name === pantryIngredient.name) {
+                // At this point, we've found the ingredient we need, now to check if the necessary amount is available.
+                if (recipeUnits.mass.indexOf(recipeIngredient.unit) >= 0 && recipeUnits.mass.indexOf(pantryIngredient.unit) >= 0) {
+                    // Normalize to grams
+                    recipeIngredientAmount = convert(recipeIngredient.amount, parseUnit(recipeIngredient.unit)).to("g");
+                    pantryIngredientAmount = convert(recipeIngredient.amount, parseUnit(pantryIngredient.unit)).to("g");
+                } else if (recipeUnits.volume.indexOf(recipeIngredient.unit) >= 0 && recipeUnits.volume.indexOf(pantryIngredient.unit) >= 0) {
+                    // Normalize to milliliters
+                    recipeIngredientAmount = convert(recipeIngredient.amount, parseUnit(recipeIngredient.unit)).to("ml");
+                    pantryIngredientAmount = convert(recipeIngredient.amount, parseUnit(pantryIngredient.unit)).to("ml");
+                } else if (recipeIngredient.unit == "ea" && pantryIngredient.unit == "ea") {
+                    // Continue with "ea" (each)
+                    recipeIngredientAmount = recipeIngredient.amount;
+                    pantryIngredientAmount = pantryIngredient.amount;
+                } else {
+                    // Volume vs mass mismatch
+                    console.log("Volume vs mass mismatch on ingredients: ",recipeIngredient, pantryIngredient);
+                    continue; // TODO: throw an error maybe?
+                }
+                if (pantryIngredientAmount >= recipeIngredientAmount) {
+                    amountFound = recipeIngredient.amount;
+                    amountUnit = recipeIngredient.unit;
+                } else {
+                    amountFound += pantryIngredientAmount;
+                }
+            }
+            matches.push({
+                ingredient: recipeIngredient,
+                match: {
+                    completeMatch: amountFound >= amountNeeded,
+                    missingAmount: amountNeeded - amountFound,
+                    missingUnit: amountUnit,
+                }
+            });
+        }
+    });
+    return matches;
 }
