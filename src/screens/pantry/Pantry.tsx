@@ -38,7 +38,10 @@ export function Pantry() {
   const [editingItem, setEditingItem] = useState<any | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  const openSwipeable = useRef<(() => void) | null>(null);
+  const openSwipeable = useRef<{
+    id: string;
+    close: () => void;
+  } | null>(null);
 
   const fetchIngredients = useCallback(async () => {
     if (!pantryId) return;
@@ -99,14 +102,18 @@ export function Pantry() {
   });
 
   const updateQuantity = async (id: string, change: number) => {
-    const current = ingredients.find((item) => item.ingredient_id === id);
+    const current = ingredients.find(
+      (item) => String(item.ingredient_id) === String(id),
+    );
     if (!current || !pantryId) return;
 
     const newQuantity = Math.max(1, (current.quantity ?? 1) + change);
 
     setIngredients((prev) =>
       prev.map((item) =>
-        item.ingredient_id === id ? { ...item, quantity: newQuantity } : item,
+        String(item.ingredient_id) === String(id)
+          ? { ...item, quantity: newQuantity }
+          : item,
       ),
     );
 
@@ -122,7 +129,9 @@ export function Pantry() {
 
     setIngredients((prev) =>
       prev.map((item) =>
-        item.ingredient_id === id ? { ...item, quantity: newQuantity } : item,
+        String(item.ingredient_id) === String(id)
+          ? { ...item, quantity: newQuantity }
+          : item,
       ),
     );
 
@@ -134,7 +143,13 @@ export function Pantry() {
   const handleDelete = async (id: string) => {
     if (!pantryId) return;
 
-    setIngredients((prev) => prev.filter((item) => item.ingredient_id !== id));
+    setIngredients((prev) =>
+      prev.filter((item) => String(item.ingredient_id) !== String(id)),
+    );
+
+    if (openSwipeable.current?.id === String(id)) {
+      openSwipeable.current = null;
+    }
 
     const { error } = await deleteIngredient(id, pantryId);
 
@@ -152,6 +167,13 @@ export function Pantry() {
           (item) => !idsToDelete.includes(String(item.ingredient_id)),
         ),
       );
+
+      if (
+        openSwipeable.current &&
+        idsToDelete.includes(openSwipeable.current.id)
+      ) {
+        openSwipeable.current = null;
+      }
     }
   };
 
@@ -214,31 +236,42 @@ export function Pantry() {
             colors={[colors.primary]}
           />
         }
-        renderItem={({ item }) => (
-          <IngredientsCard
-            name={item.name_product}
-            unit={item.unit}
-            quantity={item.quantity ?? 0}
-            image={item.image}
-            selectMode={editMode.active}
-            selected={editMode.selectedIds.has(String(item.ingredient_id))}
-            onIncrease={() => updateQuantity(item.ingredient_id, 1)}
-            onDecrease={() => updateQuantity(item.ingredient_id, -1)}
-            onDelete={() => handleDelete(item.ingredient_id)}
-            onQuantityChange={(value) =>
-              setQuantity(item.ingredient_id, value)
-            }
-            onPress={
-              editMode.active
-                ? () => editMode.toggle(String(item.ingredient_id))
-                : () => setEditingItem(item)
-            }
-            onSwipeOpen={(close) => {
-              openSwipeable.current?.();
-              openSwipeable.current = close;
-            }}
-          />
-        )}
+        renderItem={({ item }) => {
+          const itemId = String(item.ingredient_id);
+
+          return (
+            <IngredientsCard
+              id={itemId}
+              name={item.name_product}
+              unit={item.unit}
+              quantity={item.quantity ?? 0}
+              image={item.image}
+              selectMode={editMode.active}
+              selected={editMode.selectedIds.has(itemId)}
+              onIncrease={() => updateQuantity(itemId, 1)}
+              onDecrease={() => updateQuantity(itemId, -1)}
+              onDelete={() => handleDelete(itemId)}
+              onQuantityChange={(value) => setQuantity(itemId, value)}
+              onPress={
+                editMode.active
+                  ? () => editMode.toggle(itemId)
+                  : () => setEditingItem(item)
+              }
+              onSwipeOpen={(id, close) => {
+                if (openSwipeable.current && openSwipeable.current.id !== id) {
+                  openSwipeable.current.close();
+                }
+
+                openSwipeable.current = { id, close };
+              }}
+              onSwipeClose={(id) => {
+                if (openSwipeable.current?.id === id) {
+                  openSwipeable.current = null;
+                }
+              }}
+            />
+          );
+        }}
       />
 
       {editMode.active && (

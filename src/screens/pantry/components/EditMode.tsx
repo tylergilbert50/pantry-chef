@@ -58,7 +58,7 @@ export function useEditMode({
     setActive(false);
 
     const results = await Promise.all(
-      idsToDelete.map((id) => deleteIngredient(Number(id), pantryId)),
+      idsToDelete.map((id) => deleteIngredient(id, pantryId)),
     );
 
     if (results.some((r) => r.error)) {

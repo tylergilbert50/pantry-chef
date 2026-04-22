@@ -13,24 +13,25 @@ import colors from "../../../theme/colors";
 import QuantityStepper from "./CountStepper";
 
 type IngredientCardProps = {
+  id: string;
   name: string;
   quantity: number;
   unit?: string;
   image?: string;
   selectMode?: boolean;
   selected?: boolean;
-
   onIncrease: () => void;
   onDecrease: () => void;
   onDelete: () => void;
   onQuantityChange: (value: number) => void;
   onPress: () => void;
-  onSwipeOpen?: (close: () => void) => void;
+  onSwipeOpen?: (id: string, close: () => void) => void;
+  onSwipeClose?: (id: string) => void;
 };
 
 export default function IngredientsCard({
+  id,
   name,
-  unit,
   quantity,
   image,
   selectMode = false,
@@ -41,6 +42,7 @@ export default function IngredientsCard({
   onQuantityChange,
   onPress,
   onSwipeOpen,
+  onSwipeClose,
 }: IngredientCardProps) {
   const swipeableRef = useRef<Swipeable>(null);
 
@@ -50,7 +52,11 @@ export default function IngredientsCard({
   };
 
   const handleSwipeOpen = () => {
-    onSwipeOpen?.(() => swipeableRef.current?.close());
+    onSwipeOpen?.(id, () => swipeableRef.current?.close());
+  };
+
+  const handleSwipeClose = () => {
+    onSwipeClose?.(id);
   };
 
   const renderRightActions = (
@@ -105,12 +111,6 @@ export default function IngredientsCard({
 
       <View style={styles.info}>
         <Text style={styles.name}>{name}</Text>
-
-        {unit ? (
-          <Text style={styles.subText}>
-            {quantity} {unit}
-          </Text>
-        ) : null}
       </View>
 
       {!selectMode && (
@@ -136,6 +136,7 @@ export default function IngredientsCard({
       overshootRight={false}
       containerStyle={styles.swipeContainer}
       onSwipeableWillOpen={handleSwipeOpen}
+      onSwipeableClose={handleSwipeClose}
     >
       {cardContent}
     </Swipeable>
@@ -156,9 +157,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     padding: 12,
     borderRadius: 20,
-    shadowColor: colors.black,
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
     elevation: 3,
   },
   checkboxContainer: {
@@ -178,15 +176,12 @@ const styles = StyleSheet.create({
   },
   info: {
     flex: 1,
+    justifyContent: "center",
   },
   name: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "600",
     color: colors.black,
-  },
-  subText: {
-    fontSize: 13,
-    color: "#666",
   },
   deleteAction: {
     backgroundColor: "#FF3B30",
