@@ -37,6 +37,10 @@ type RecipeProps = {
   instructions: string[];
 };
 
+const HEADER_OFFSET = 80;
+const HERO_HEIGHT = 260;
+const CARD_OVERLAP = 24;
+
 function createInitialProps(): RecipeProps {
   return {
     title: "",
@@ -100,9 +104,11 @@ export default function RecipeReader() {
     setMakingRecipe(true);
     try {
       await madeRecipe(recipeId, pantryId);
-      Alert.alert("Nice!", "Recipe marked as made and pantry updated.");
     } catch (error) {
-      Alert.alert("Error", "Something went wrong. Please try again.");
+      console.error("madeRecipe failed:", error);
+      const message =
+        error instanceof Error ? error.message : "Please try again.";
+      Alert.alert("Error", message);
     } finally {
       setMakingRecipe(false);
     }
@@ -182,7 +188,10 @@ export default function RecipeReader() {
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
+        <View style={styles.heroSpacer} />
+
         <View style={styles.card}>
           <Text style={styles.title}>{data.title}</Text>
           <Text style={styles.recipeType}>{data.recipeType}</Text>
@@ -205,22 +214,25 @@ export default function RecipeReader() {
 
           <Text style={styles.header}>Directions</Text>
           <NumberedList items={data.instructions} />
+
+          <TouchableOpacity
+            style={[
+              styles.madeButton,
+              makingRecipe && styles.madeButtonDisabled,
+            ]}
+            onPress={handleMadeRecipe}
+            disabled={makingRecipe}
+          >
+            {makingRecipe ? (
+              <ActivityIndicator color={colors.white} />
+            ) : (
+              <Text style={styles.madeButtonText}>Finished</Text>
+            )}
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
-      <View style={styles.bottomBar}>
-        <TouchableOpacity
-          style={[styles.madeButton, makingRecipe && styles.madeButtonDisabled]}
-          onPress={handleMadeRecipe}
-          disabled={makingRecipe}
-        >
-          {makingRecipe ? (
-            <ActivityIndicator color={colors.white} />
-          ) : (
-            <Text style={styles.madeButtonText}>I Made This!</Text>
-          )}
-        </TouchableOpacity>
-      </View>
+      <View style={styles.headerCircle} pointerEvents="none" />
     </View>
   );
 }
@@ -228,26 +240,53 @@ export default function RecipeReader() {
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.white,
     justifyContent: "center",
     alignItems: "center",
   },
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.white,
+  },
+  header: {
+    fontWeight: "700",
+    fontSize: 22,
+    marginTop: 24,
+    marginBottom: 12,
+    color: colors.black,
+  },
+  headerCircle: {
+    position: "absolute",
+    width: 900,
+    height: 900,
+    borderRadius: 325,
+    top: -820,
+    alignSelf: "center",
+    backgroundColor: colors.primary,
+    zIndex: 10,
+    elevation: 10,
   },
   heroImage: {
+    position: "absolute",
+    top: HEADER_OFFSET,
+    left: 0,
+    right: 0,
     width: "100%",
-    height: 260,
+    height: HERO_HEIGHT,
+    zIndex: 0,
   },
   scrollView: {
     flex: 1,
+    backgroundColor: "transparent",
   },
   scrollContent: {
-    paddingBottom: 40,
+    paddingBottom: 20,
+  },
+  heroSpacer: {
+    height: HEADER_OFFSET + HERO_HEIGHT - CARD_OVERLAP,
+    backgroundColor: "transparent",
   },
   card: {
-    marginTop: -24,
     backgroundColor: colors.white,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
@@ -268,13 +307,6 @@ const styles = StyleSheet.create({
   bodyText: {
     fontSize: 16,
     lineHeight: 24,
-    color: colors.black,
-  },
-  header: {
-    fontWeight: "700",
-    fontSize: 22,
-    marginTop: 24,
-    marginBottom: 12,
     color: colors.black,
   },
   horizontalFlex: {
@@ -332,6 +364,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: "center",
+    marginTop: 28,
   },
   madeButtonDisabled: {
     opacity: 0.5,
