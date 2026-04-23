@@ -18,6 +18,7 @@
       }
     },
     "android": {
+      "package": "com.pantrychef.app",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
       },
