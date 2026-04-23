@@ -14,15 +14,29 @@ import { Ionicons } from "@expo/vector-icons";
 import colors from "../../theme/colors";
 import RecipeCard from "./components/RecipeCard";
 import { getRecipes, upsertRecipe } from "../../services/recipeService";
+import { getRecipeInformationBulk } from "../../services/apiService";
 import { useUser } from "../../context/UserContext";
 import { Database } from "../../../types/database.types";
 import { RecipesStackParamList } from "../../navigation/RecipesNavigator";
 
 type Recipe = Database["public"]["Tables"]["recipes"]["Row"];
 
+type RecipeWithDetails = Recipe & {
+  image?: string;
+  mealType?: string;
+};
+
 type RecipesListProps = {
   mode: "saved" | "history";
 };
+
+function formatMealType(dishTypes: string[] | undefined) {
+  if (!dishTypes || dishTypes.length === 0) return undefined;
+  return dishTypes
+    .slice(0, 2)
+    .map((type) => type.charAt(0).toUpperCase() + type.slice(1).toLowerCase())
+    .join(" / ");
+}
 
 export function RecipesList({ mode }: RecipesListProps) {
   const { profile } = useUser();
@@ -31,7 +45,7 @@ export function RecipesList({ mode }: RecipesListProps) {
     useNavigation<NativeStackNavigationProp<RecipesStackParamList>>();
 
   const [search, setSearch] = useState("");
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [recipes, setRecipes] = useState<RecipeWithDetails[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchRecipes = useCallback(async () => {
@@ -47,7 +61,42 @@ export function RecipesList({ mode }: RecipesListProps) {
       return;
     }
 
-    setRecipes(data ?? []);
+    const rows = data ?? [];
+
+    if (rows.length === 0) {
+      setRecipes([]);
+      return;
+    }
+
+    // Show DB rows immediately so titles render without waiting on Spoonacular
+    setRecipes(rows);
+
+    // Enrich with Spoonacular details — cached by queryClient for 1hr
+    try {
+      const numericIds = rows
+        .map((r) => Number(r.recipe_id))
+        .filter((n) => !Number.isNaN(n));
+
+      if (numericIds.length === 0) return;
+
+      const details = await getRecipeInformationBulk(numericIds, false);
+      const detailsById = new Map(details.map((d) => [String(d.id), d]));
+
+      setRecipes(
+        rows.map((row) => {
+          const info = detailsById.get(row.recipe_id);
+          if (!info) return row;
+          return {
+            ...row,
+            image: info.image,
+            mealType: formatMealType(info.dishTypes),
+          };
+        }),
+      );
+    } catch (err) {
+      console.error("Error enriching recipes from Spoonacular:", err);
+      // DB rows are already shown; enrichment failure is non-fatal
+    }
   }, [userId, mode]);
 
   useFocusEffect(
@@ -62,7 +111,7 @@ export function RecipesList({ mode }: RecipesListProps) {
     setRefreshing(false);
   }, [fetchRecipes]);
 
-  const toggleSave = async (recipe: Recipe) => {
+  const toggleSave = async (recipe: RecipeWithDetails) => {
     if (!userId) return;
 
     const updated = { ...recipe, saved: !recipe.saved };
@@ -73,8 +122,10 @@ export function RecipesList({ mode }: RecipesListProps) {
         : prev.map((r) => (r.recipe_id === recipe.recipe_id ? updated : r)),
     );
 
+    // Strip the enrichment-only fields before upserting — they aren't columns
+    const { image, mealType, ...dbRow } = recipe;
     await upsertRecipe({
-      ...recipe,
+      ...dbRow,
       saved: !recipe.saved,
     });
   };
@@ -142,6 +193,8 @@ export function RecipesList({ mode }: RecipesListProps) {
         renderItem={({ item }) => (
           <RecipeCard
             name={item.recipe_name}
+            image={item.image}
+            mealType={item.mealType}
             saved={item.saved ?? false}
             madeOn={item.made_on}
             onToggleSave={() => toggleSave(item)}

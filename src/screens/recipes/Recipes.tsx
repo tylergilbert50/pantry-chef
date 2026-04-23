@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -24,7 +24,11 @@ import {
   SpoonacularRecipe,
   SpoonacularRecipeInformation,
 } from "../../services/apiService";
-import { getRecipes, upsertRecipe } from "../../services/recipeService";
+import {
+  getRecipes,
+  upsertRecipe,
+  canMakeRecipe,
+} from "../../services/recipeService";
 
 type DiscoverRecipe = {
   id: string;
@@ -122,12 +126,6 @@ export function Recipes() {
 
       const pantryRows = pantryItems ?? [];
 
-      const pantryIngredientIds = new Set<number>(
-        pantryRows
-          .map((item) => parseInt(item.spoonacular_id, 10))
-          .filter((id) => !isNaN(id)),
-      );
-
       const pantryIngredientNames = new Set<string>(
         pantryRows
           .map((item) =>
@@ -160,27 +158,9 @@ export function Recipes() {
       const detailedRecipes: SpoonacularRecipeInformation[] =
         await getRecipeInformationBulk(ids, false);
 
-      const matchedRecipes = detailedRecipes.filter((recipe) => {
-        const ingredients = recipe.extendedIngredients ?? [];
-
-        if (ingredients.length === 0) {
-          return false;
-        }
-
-        return ingredients.every((ingredient) => {
-          const ingredientId = ingredient.id;
-          const ingredientName = normalizeIngredientName(ingredient.name);
-
-          if (
-            typeof ingredientId === "number" &&
-            pantryIngredientIds.has(ingredientId)
-          ) {
-            return true;
-          }
-
-          return pantryIngredientNames.has(ingredientName);
-        });
-      });
+      const matchedRecipes = detailedRecipes.filter(
+        (recipe) => canMakeRecipe(recipe, pantryRows).canMake,
+      );
 
       const uniqueRecipes = Array.from(
         new Map(
@@ -199,7 +179,9 @@ export function Recipes() {
       setRecipes(uniqueRecipes);
 
       if (userId) {
-        const { data: savedRecipes } = await getRecipes(userId, { saved: true });
+        const { data: savedRecipes } = await getRecipes(userId, {
+          saved: true,
+        });
         if (savedRecipes) {
           setSavedIds(new Set(savedRecipes.map((r) => r.recipe_id)));
         }
@@ -210,13 +192,15 @@ export function Recipes() {
     } finally {
       setLoading(false);
     }
-  }, [pantryId]);
+  }, [pantryId, userId]);
 
-  useEffect(() => {
-    if (!userLoading) {
-      loadRecipes();
-    }
-  }, [userLoading, loadRecipes]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!userLoading) {
+        loadRecipes();
+      }
+    }, [userLoading, loadRecipes]),
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -274,11 +258,7 @@ export function Recipes() {
                   onPress={() => navigation.navigate("SavedRecipes")}
                 >
                   <View style={styles.linkIcon}>
-                    <Ionicons
-                      name="heart"
-                      size={20}
-                      color={colors.primary}
-                    />
+                    <Ionicons name="heart" size={20} color={colors.primary} />
                   </View>
                   <Text style={styles.linkTitle}>Saved</Text>
                 </TouchableOpacity>

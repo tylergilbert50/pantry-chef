@@ -33,6 +33,7 @@ export default function IngredientsCard({
   id,
   name,
   quantity,
+  unit,
   image,
   selectMode = false,
   selected = false,
@@ -116,6 +117,7 @@ export default function IngredientsCard({
       {!selectMode && (
         <QuantityStepper
           quantity={quantity}
+          unit={unit}
           onIncrease={onIncrease}
           onDecrease={onDecrease}
           onQuantityChange={onQuantityChange}
