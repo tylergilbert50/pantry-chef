@@ -40,6 +40,7 @@ interface IngredientFormProps {
   onDone: () => void;
 }
 
+
 const formatDateInput = (text: string) => {
   const cleaned = text.replace(/\D/g, "").slice(0, 8);
 
@@ -71,7 +72,7 @@ export function IngredientForm({
 
   const [category, setCategory] = useState<Category | "">(
     (existingIngredient?.category as Category) ??
-      (product ? mapAisleToCategory(product.aisle) : ""),
+    (product ? mapAisleToCategory(product.aisle) : ""),
   );
 
   const [quantity, setQuantity] = useState(
@@ -204,6 +205,7 @@ export function IngredientForm({
         resetForm();
       }
     }
+
   };
 
   return (

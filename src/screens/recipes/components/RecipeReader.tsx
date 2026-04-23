@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   },
   heroImage: {
     position: "absolute",
-    top: HEADER_OFFSET,
+    top: HEADER_OFFSET - 20,
     left: 0,
     right: 0,
     width: "100%",
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   heroSpacer: {
-    height: HEADER_OFFSET + HERO_HEIGHT - CARD_OVERLAP,
+    height: HEADER_OFFSET + HERO_HEIGHT - CARD_OVERLAP-20,
     backgroundColor: "transparent",
   },
   card: {

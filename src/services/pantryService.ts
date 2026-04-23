@@ -3,7 +3,7 @@ import {Database} from "../../types/database.types";
 
 type pantryInsert = Database['public']['Tables']['pantries']['Insert'];
 
-// Since a pantry ia automatically created for new users, this function is only used after a user leaves or deletes a pantry and needs to start a new one
+// Since a pantry is automatically created for new users, this function is only used after a user leaves or deletes a pantry and needs to start a new one
 export const createPantry = async (pantry: pantryInsert) => {
     const { data, error } = await supabase
         .from('pantries')

@@ -12,8 +12,18 @@ import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { useIsFocused } from "@react-navigation/native";
 import colors from "../../theme/colors";
-import { lookupBarcode, SpoonacularProduct } from "../../services/apiService";
 import { IngredientForm } from "./components/IngredientForm";
+import { useUser } from "../../context/UserContext";
+import {
+  normalizeName,
+  lookupBarcode,
+  SpoonacularProduct,
+  IngredientInsert,
+} from "../../services/apiService";
+import {
+  addIngredient,
+  deleteAllPantryIngredients,
+} from "@/services/ingredientService";
 
 const SCAN_BOX_WIDTH = 280;
 const SCAN_BOX_HEIGHT = 160;
@@ -27,6 +37,107 @@ export function Barcode() {
   const [error, setError] = useState<string | null>(null);
   const [product, setProduct] = useState<SpoonacularProduct | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const { profile } = useUser();
+
+  const addDefaultIngredients = async () => {
+    const pantryId = profile?.pantry_id;
+    if (!pantryId) {
+      console.error("Error", "No pantry found for your account.");
+      return;
+    }
+    console.log("Deleting pantry ingredients...");
+    await deleteAllPantryIngredients(pantryId);
+
+    const defaults: IngredientInsert[] = [
+      {
+        pantry_id: pantryId,
+        spoonacular_id: "20081",
+        name_product: "Flour",
+        name_normalized: normalizeName("flour"),
+        category: "Dry",
+        quantity: 1,
+        unit: "lb",
+        expiration_date: null,
+        image: "https://img.spoonacular.com/ingredients_250x250/flour.png",
+      },
+      {
+        pantry_id: pantryId,
+        spoonacular_id: "1123",
+        name_product: "Eggs",
+        name_normalized: normalizeName("Eggs"),
+        category: "Meat",
+        quantity: 12,
+        unit: "each",
+        expiration_date: null,
+        image: "https://img.spoonacular.com/ingredients_250x250/egg.png",
+      },
+      {
+        pantry_id: pantryId,
+        spoonacular_id: "2047",
+        name_product: "Salt",
+        name_normalized: normalizeName("Salt"),
+        category: "Dry",
+        quantity: 32,
+        unit: "oz",
+        expiration_date: null,
+        image: "https://img.spoonacular.com/ingredients_250x250/salt.jpg",
+      },
+      {
+        pantry_id: pantryId,
+        spoonacular_id: "19335",
+        name_product: "Sugar",
+        name_normalized: normalizeName("Sugar"),
+        category: "Dry",
+        quantity: 32,
+        unit: "oz",
+        expiration_date: null,
+        image: "https://img.spoonacular.com/ingredients_250x250/sugar-in-bowl.png",
+      },
+      {
+        pantry_id: pantryId,
+        spoonacular_id: "18369",
+        name_product: "Baking Powder",
+        name_normalized: normalizeName("Baking Powder"),
+        category: "Dry",
+        quantity: 32,
+        unit: "oz",
+        expiration_date: null,
+        image: "https://img.spoonacular.com/ingredients_250x250/white-powder.jpg",
+      },
+      {
+        pantry_id: pantryId,
+        spoonacular_id: "1077",
+        name_product: "Milk",
+        name_normalized: normalizeName("Milk"),
+        category: "Dairy",
+        quantity: 32,
+        unit: "oz",
+        expiration_date: null,
+        image: "https://img.spoonacular.com/ingredients_250x250/milk.png",
+      },
+      {
+        pantry_id: pantryId,
+        spoonacular_id: "2050",
+        name_product: "vanilla extract",
+        name_normalized: normalizeName("vanilla extract"),
+        category: "Fruit",
+        quantity: 16,
+        unit: "oz",
+        expiration_date: null,
+        image: "https://img.spoonacular.com/ingredients_250x250/vanilla-extract.jpg",
+      },
+    ];
+
+    try {
+      for (const ingredient of defaults) {
+        const { error } = await addIngredient(ingredient);
+        if (error) throw error;
+      }
+      console.log("Default ingredients added!");
+    } catch (err: any) {
+      console.error("Error", err.message || "Failed to add default ingredients.");
+    }
+     };
 
   useEffect(() => {
     (async () => {
@@ -36,6 +147,17 @@ export function Barcode() {
   }, []);
 
   const handleBarCodeScanned = async ({ data }: { data: string }) => {
+    if (loading) return;
+    if (data === "5901234123457") {
+      // Add default ingredients
+      setScannedValue(data);
+      setLoading(true);
+      setShowForm(true);
+      console.log("Adding default ingredients...");
+      await addDefaultIngredients();
+      setLoading(false);
+      return;
+    }
     setScannedValue(data);
     setLoading(true);
     setError(null);

@@ -21,6 +21,16 @@ export const addIngredient = async (ingredient: IngredientInsert) => {
   return { data, error };
 };
 
+export const deleteAllPantryIngredients = async (
+  pantryID: string,
+) => {
+  const { error } = await supabase
+    .from("pantry_ingredients")
+    .delete()
+    .eq("pantry_id", pantryID);
+  return { error };
+};
+
 export const deleteIngredient = async (
   ingredientID: string,
   pantryID: string,

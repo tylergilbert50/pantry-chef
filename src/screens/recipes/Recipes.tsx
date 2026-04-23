@@ -145,7 +145,7 @@ export function Recipes() {
       const foundRecipes: SpoonacularRecipe[] = await searchRecipes(
         pantryNamesForSearch.join(","),
         30,
-        1,
+        2, // Ranking 2 minimizes missing ingredients
         false,
       );
 
