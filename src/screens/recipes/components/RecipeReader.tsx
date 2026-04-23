@@ -6,6 +6,8 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  TouchableOpacity,
+  Alert,
 } from "react-native";
 import Unorderedlist from "react-native-unordered-list";
 import { stripHtml } from "string-strip-html";
@@ -15,6 +17,9 @@ import {
   SpoonacularExtendedIngredientList,
   getRecipeInformation,
 } from "../../../services/apiService";
+import { madeRecipe } from "../../../services/recipeService";
+import { useUser } from "../../../context/UserContext";
+import colors from "../../../theme/colors";
 
 type RecipeProps = {
   title: string;
@@ -56,19 +61,38 @@ const IngredientList = ({
   );
 };
 
-export default function RecipeReader() {
+export default function RecipeReader({ route }: any) {
+  const recipeId = route?.params?.recipeId ?? "324694";
+  const { profile } = useUser();
+  const pantryId = profile?.pantry_id;
+
   const [data, setData] = useState(createInitialProps);
   const [loading, setLoading] = useState(true);
+  const [makingRecipe, setMakingRecipe] = useState(false);
+
+  const handleMadeRecipe = async () => {
+    if (!pantryId) {
+      Alert.alert("Error", "No pantry found for your account.");
+      return;
+    }
+    setMakingRecipe(true);
+    try {
+      await madeRecipe(recipeId, pantryId);
+      Alert.alert("Nice!", "Recipe marked as made and pantry updated.");
+    } catch (error) {
+      Alert.alert("Error", "Something went wrong. Please try again.");
+    } finally {
+      setMakingRecipe(false);
+    }
+  };
 
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
         setLoading(true);
 
-        const testId: number = 324694;
-
         const recipe: SpoonacularRecipeInformation = await getRecipeInformation(
-          testId,
+          Number(recipeId),
           false,
         );
 
@@ -143,6 +167,20 @@ export default function RecipeReader() {
           </Text>
         </View>
       </ScrollView>
+
+      <View style={styles.bottomBar}>
+        <TouchableOpacity
+          style={[styles.madeButton, makingRecipe && styles.madeButtonDisabled]}
+          onPress={handleMadeRecipe}
+          disabled={makingRecipe}
+        >
+          {makingRecipe ? (
+            <ActivityIndicator color={colors.white} />
+          ) : (
+            <Text style={styles.madeButtonText}>I Made This!</Text>
+          )}
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -235,5 +273,28 @@ const styles = StyleSheet.create({
   statusBarBackground: {
     height: 50,
     backgroundColor: "orange",
+  },
+  bottomBar: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 16,
+    paddingBottom: 32,
+    backgroundColor: "#fff",
+  },
+  madeButton: {
+    backgroundColor: colors.secondary,
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+  madeButtonDisabled: {
+    opacity: 0.5,
+  },
+  madeButtonText: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: "700",
   },
 });
