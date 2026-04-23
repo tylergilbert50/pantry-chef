@@ -30,23 +30,25 @@ export default function RecipeCard({
 
   return (
     <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={styles.card}>
-      {image ? (
-        <Image
-          source={{ uri: image }}
-          style={styles.image}
-          resizeMode="cover"
-        />
-      ) : (
-        <View style={styles.imagePlaceholder} />
-      )}
-      <View style={styles.imagePlaceholder}>
-        <TouchableOpacity style={styles.heartButton} onPress={onToggleSave}>
-          <Ionicons
-            name={saved ? "heart" : "heart-outline"}
-            size={22}
-            color={saved ? colors.secondary : colors.white}
+      <View>
+        {image ? (
+          <Image
+            source={{ uri: image }}
+            style={styles.image}
+            resizeMode="cover"
           />
-        </TouchableOpacity>
+        ) : (
+          <View style={styles.imagePlaceholder} />
+        )}
+        {onToggleSave && (
+          <TouchableOpacity style={styles.heartButton} onPress={onToggleSave}>
+            <Ionicons
+              name={saved ? "heart" : "heart-outline"}
+              size={22}
+              color={saved ? colors.secondary : colors.white}
+            />
+          </TouchableOpacity>
+        )}
       </View>
 
       <View style={styles.content}>
@@ -60,20 +62,6 @@ export default function RecipeCard({
           <Text style={styles.metaText}>
             {new Date(madeOn).toLocaleDateString()}
           </Text>
-        )}
-
-        {typeof saved === "boolean" && onToggleSave && (
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={onToggleSave}
-            style={styles.saveButton}
-          >
-            <Ionicons
-              name={saved ? "bookmark" : "bookmark-outline"}
-              size={18}
-              color={colors.primary}
-            />
-          </TouchableOpacity>
         )}
       </View>
     </TouchableOpacity>
@@ -134,13 +122,5 @@ const styles = StyleSheet.create({
     color: "#8F8F8F",
     marginTop: 4,
     textAlign: "center",
-  },
-  saveButton: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    backgroundColor: colors.white,
-    borderRadius: 999,
-    padding: 6,
   },
 });

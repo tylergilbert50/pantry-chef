@@ -24,6 +24,7 @@ import {
   SpoonacularRecipe,
   SpoonacularRecipeInformation,
 } from "../../services/apiService";
+import { getRecipes, upsertRecipe } from "../../services/recipeService";
 
 type DiscoverRecipe = {
   id: string;
@@ -70,6 +71,7 @@ function formatMealType(dishTypes: string[] | undefined) {
 export function Recipes() {
   const [search, setSearch] = useState("");
   const [recipes, setRecipes] = useState<DiscoverRecipe[]>([]);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -78,6 +80,27 @@ export function Recipes() {
 
   const { profile, loading: userLoading } = useUser();
   const pantryId = profile?.pantry_id;
+  const userId = profile?.user_id;
+
+  const toggleSave = async (recipe: DiscoverRecipe) => {
+    if (!userId) return;
+    const wasSaved = savedIds.has(recipe.id);
+    setSavedIds((prev) => {
+      const next = new Set(prev);
+      if (wasSaved) next.delete(recipe.id);
+      else next.add(recipe.id);
+      return next;
+    });
+    const { data: existing } = await getRecipes(userId, {});
+    const existingRow = existing?.find((r) => r.recipe_id === recipe.id);
+    await upsertRecipe({
+      recipe_id: recipe.id,
+      user_id: userId,
+      recipe_name: recipe.title,
+      saved: !wasSaved,
+      made_on: existingRow?.made_on ?? null,
+    });
+  };
 
   const loadRecipes = useCallback(async () => {
     if (!pantryId) {
@@ -174,6 +197,13 @@ export function Recipes() {
       );
 
       setRecipes(uniqueRecipes);
+
+      if (userId) {
+        const { data: savedRecipes } = await getRecipes(userId, { saved: true });
+        if (savedRecipes) {
+          setSavedIds(new Set(savedRecipes.map((r) => r.recipe_id)));
+        }
+      }
     } catch (err) {
       console.error("Error loading recipes:", err);
       setRecipes([]);
@@ -245,7 +275,7 @@ export function Recipes() {
                 >
                   <View style={styles.linkIcon}>
                     <Ionicons
-                      name="bookmark"
+                      name="heart"
                       size={20}
                       color={colors.primary}
                     />
@@ -271,6 +301,8 @@ export function Recipes() {
               title={item.title}
               mealType={item.mealType}
               image={item.image}
+              saved={savedIds.has(item.id)}
+              onToggleSave={() => toggleSave(item)}
               onPress={() =>
                 navigation.navigate("RecipeReader", {
                   recipeId: item.id,
