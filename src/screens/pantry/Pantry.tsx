@@ -117,7 +117,7 @@ export function Pantry() {
       ),
     );
 
-    await updateIngredient(id, pantryId, {
+    await updateIngredient(id, {
       quantity: newQuantity,
     });
   };
@@ -135,7 +135,7 @@ export function Pantry() {
       ),
     );
 
-    await updateIngredient(id, pantryId, {
+    await updateIngredient(id, {
       quantity: newQuantity,
     });
   };

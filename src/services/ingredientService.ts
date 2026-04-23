@@ -35,7 +35,6 @@ export const deleteIngredient = async (
 
 export const updateIngredient = async (
   ingredientId: string,
-  pantryId: string,
   updates: IngredientUpdate,
 ) => {
   const { data, error } = await supabase
@@ -43,7 +42,6 @@ export const updateIngredient = async (
     .update(updates)
     .select()
     .eq("ingredient_id", ingredientId)
-    .eq("pantry_id", pantryId);
   return { data, error };
 };
 
@@ -68,6 +66,36 @@ export const getIngredients = async (
   return { data, error };
 };
 
+export const getIngredientById = async (pantryId: string, ingredientId: string) => {
+  const { data, error } = await supabase
+    .from("pantry_ingredients")
+    .select()
+    .eq("pantry_id", pantryId)
+    .eq("ingredient_id", ingredientId)
+    .single();
+  return { data, error };
+};
+
+export const getIngredientBySpoonacularId = async (pantryId: string, spoonacularId: number) => {
+  const { data, error } = await supabase
+    .from("pantry_ingredients")
+    .select()
+    .eq("pantry_id", pantryId)
+    .eq("spoonacular_id", spoonacularId.toString())
+    .single();
+  return { data, error };
+};
+
+export const getIngredientByName = async (pantryId: string, name: string) => {
+  const { data, error } = await supabase
+    .from("pantry_ingredients")
+    .select()
+    .eq("pantry_id", pantryId)
+    .ilike("name_normalized", name.toLowerCase())
+    .single();
+  return { data, error };
+};
+
 export async function backfillImages(
   ingredients: IngredientRow[],
   pantryId: string,
@@ -79,7 +107,7 @@ export async function backfillImages(
     try {
       const imageUrl = await searchIngredientImage(item.name_product);
       const resolved = imageUrl ?? "";
-      await updateIngredient(item.ingredient_id, pantryId, { image: resolved });
+      await updateIngredient(item.ingredient_id, { image: resolved });
       item.image = resolved;
     } catch {}
   }

@@ -30,6 +30,8 @@ export type SpoonacularIngredient = {
     image: string;
     id: number;
     aisle: string;
+    amount: number;
+    unit: string;
     possibleUnits: Array<string>;
 }
 
@@ -244,7 +246,7 @@ const fetchRecipes = async (ingredients: string, numberOfRecipes: number, rankin
     return data;
 }
 
-const fetchRecipeInformation = async (id: number, includeNutrition: boolean): Promise<SpoonacularRecipeInformation> => {
+export const fetchRecipeInformation = async (id: number, includeNutrition: boolean): Promise<SpoonacularRecipeInformation> => {
     console.log("Attempting to fetch recipe information...");
     const result = await fetch(`https://api.spoonacular.com/recipes/${id}/information?includeNutrition=${includeNutrition}&apiKey=${SPOONACULAR_API_KEY}`);
     if (!result.ok) throw new Error("Network response wasn't okay");
