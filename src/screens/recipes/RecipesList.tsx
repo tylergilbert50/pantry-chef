@@ -41,10 +41,12 @@ export function RecipesList({ mode }: RecipesListProps) {
       mode === "saved" ? { saved: true } : { made: true as const };
 
     const { data, error } = await getRecipes(userId, filters);
+
     if (error) {
       console.error("Error fetching recipes:", error);
       return;
     }
+
     setRecipes(data ?? []);
   }, [userId, mode]);
 
@@ -64,12 +66,11 @@ export function RecipesList({ mode }: RecipesListProps) {
     if (!userId) return;
 
     const updated = { ...recipe, saved: !recipe.saved };
+
     setRecipes((prev) =>
       mode === "saved" && !updated.saved
         ? prev.filter((r) => r.recipe_id !== recipe.recipe_id)
-        : prev.map((r) =>
-            r.recipe_id === recipe.recipe_id ? updated : r,
-          ),
+        : prev.map((r) => (r.recipe_id === recipe.recipe_id ? updated : r)),
     );
 
     await upsertRecipe(recipe.recipe_id, userId, {
@@ -79,9 +80,7 @@ export function RecipesList({ mode }: RecipesListProps) {
   };
 
   const filtered = recipes
-    .filter((r) =>
-      r.recipe_name.toLowerCase().includes(search.toLowerCase()),
-    )
+    .filter((r) => r.recipe_name.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
       if (mode === "history") {
         return (
@@ -89,6 +88,7 @@ export function RecipesList({ mode }: RecipesListProps) {
           new Date(a.made_on ?? 0).getTime()
         );
       }
+
       return a.recipe_name.localeCompare(b.recipe_name, undefined, {
         sensitivity: "base",
       });
@@ -106,9 +106,7 @@ export function RecipesList({ mode }: RecipesListProps) {
           <TextInput
             style={styles.searchInput}
             placeholder={
-              isSaved
-                ? "Search saved recipes..."
-                : "Search recipe history..."
+              isSaved ? "Search saved recipes..." : "Search recipe history..."
             }
             placeholderTextColor="#999"
             value={search}
@@ -122,15 +120,16 @@ export function RecipesList({ mode }: RecipesListProps) {
         </View>
       </View>
 
-      <View style={styles.topSpacer} />
-
       <FlatList
         data={filtered}
         keyExtractor={(item) => item.recipe_id}
+        numColumns={2}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.listContent,
           filtered.length === 0 && styles.emptyList,
         ]}
+        columnWrapperStyle={filtered.length > 0 ? styles.row : undefined}
         keyboardShouldPersistTaps="handled"
         refreshControl={
           <RefreshControl
@@ -143,10 +142,14 @@ export function RecipesList({ mode }: RecipesListProps) {
         renderItem={({ item }) => (
           <RecipeCard
             name={item.recipe_name}
-            saved={item.saved}
+            saved={item.saved ?? false}
             madeOn={item.made_on}
             onToggleSave={() => toggleSave(item)}
-            onPress={() => navigation.navigate("RecipeDetail")}
+            onPress={() =>
+              navigation.navigate("RecipeReader", {
+                recipeId: item.recipe_id,
+              })
+            }
           />
         )}
         ListEmptyComponent={
@@ -212,11 +215,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
     fontSize: 16,
   },
-  topSpacer: {
-    height: 140,
-  },
   listContent: {
+    paddingTop: 140,
+    paddingHorizontal: 16,
     paddingBottom: 40,
+  },
+  row: {
+    justifyContent: "space-between",
   },
   emptyList: {
     flexGrow: 1,
@@ -226,12 +231,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingTop: 60,
+    paddingHorizontal: 24,
   },
   emptyTitle: {
     fontSize: 18,
     fontWeight: "600",
     color: "#999",
     marginTop: 16,
+    textAlign: "center",
   },
   emptySubtext: {
     fontSize: 14,

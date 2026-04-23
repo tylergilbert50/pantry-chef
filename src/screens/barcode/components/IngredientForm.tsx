@@ -25,7 +25,7 @@ import {
   SpoonacularProduct,
   IngredientInsert,
   mapAisleToCategory,
-  searchIngredientImage,
+  searchIngredientInfo,
 } from "../../../services/apiService";
 import { Database } from "../../../../types/database.types";
 import { UNITS, Unit } from "../../../../types/units";
@@ -167,21 +167,23 @@ export function IngredientForm({
       }
     } else {
       let imageUrl: string | null = product?.image ?? null;
+      let spoonacularId: string | null =
+        product?.id != null ? String(product.id) : null;
 
-      if (!imageUrl) {
+      if (!spoonacularId || !imageUrl) {
         try {
-          const searched = await searchIngredientImage(
-            normalizeName(nameProduct),
-          );
-          imageUrl = searched ?? null;
+          const info = await searchIngredientInfo(normalizeName(nameProduct));
+          if (!spoonacularId && info.id != null)
+            spoonacularId = String(info.id);
+          if (!imageUrl) imageUrl = info.imageUrl;
         } catch {
-          imageUrl = null;
+          // non-fatal — ingredient saves without image/id
         }
       }
 
       const ingredient: IngredientInsert = {
         pantry_id: pantryId,
-        spoonacular_id: product?.id != null ? String(product.id) : "",
+        spoonacular_id: spoonacularId ?? "",
         name_normalized: normalizeName(nameProduct),
         name_product: nameProduct.trim(),
         category: category,
@@ -231,16 +233,16 @@ export function IngredientForm({
             {errors.nameProduct && <Text style={styles.error}>*</Text>}
           </Text>
           <TextInput
-          style={[styles.fieldInput, errors.nameProduct && styles.inputError]}
-          value={nameProduct}
-          onChangeText={setNameProduct}
-          onFocus={() => {
-            setShowCategoryDropdown(false);
-            setShowUnitDropdown(false);
-          }}
-          placeholder="-"
-          placeholderTextColor="#888"
-        />
+            style={[styles.fieldInput, errors.nameProduct && styles.inputError]}
+            value={nameProduct}
+            onChangeText={setNameProduct}
+            onFocus={() => {
+              setShowCategoryDropdown(false);
+              setShowUnitDropdown(false);
+            }}
+            placeholder="-"
+            placeholderTextColor="#888"
+          />
 
           <Text style={styles.fieldLabel}>
             Category {errors.category && <Text style={styles.error}>*</Text>}
@@ -249,9 +251,9 @@ export function IngredientForm({
             <TouchableOpacity
               style={[styles.dropdown, errors.category && styles.inputError]}
               onPress={() => {
-                Keyboard.dismiss(); 
+                Keyboard.dismiss();
                 setShowCategoryDropdown((prev) => !prev);
-                setShowUnitDropdown(false); 
+                setShowUnitDropdown(false);
               }}
             >
               <Text style={styles.dropdownText}>{category || "-"}</Text>

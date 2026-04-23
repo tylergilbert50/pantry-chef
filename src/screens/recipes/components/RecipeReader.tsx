@@ -2,28 +2,35 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  Image,
   StyleSheet,
   ScrollView,
+  Image,
   ActivityIndicator,
 } from "react-native";
+import { RouteProp, useRoute } from "@react-navigation/native";
 import Unorderedlist from "react-native-unordered-list";
 import { stripHtml } from "string-strip-html";
 
+import colors from "../../../theme/colors";
+import { RecipesStackParamList } from "../../../navigation/RecipesNavigator";
 import {
-  SpoonacularRecipeInformation,
-  SpoonacularIngredientList,
   getRecipeInformation,
+  getRecipeInstructions,
+  SpoonacularRecipeInformation,
+  SpoonacularRecipeInstructions,
+  SpoonacularExtendedIngredientList,
 } from "../../../services/apiService";
+
+type RecipeReaderRouteProp = RouteProp<RecipesStackParamList, "RecipeReader">;
 
 type RecipeProps = {
   title: string;
   recipeType: string;
   detailCards: Record<string, string>;
   textIntro: string;
-  ingredients: SpoonacularIngredientList;
-  bodyText: string;
+  ingredients: SpoonacularExtendedIngredientList;
   heroImageUri: string;
+  instructions: string[];
 };
 
 function createInitialProps(): RecipeProps {
@@ -33,31 +40,49 @@ function createInitialProps(): RecipeProps {
     detailCards: {},
     textIntro: "",
     ingredients: [],
-    bodyText: "",
     heroImageUri: "",
+    instructions: [],
   };
 }
 
-const IngredientList = ({
+function IngredientList({
   ingredients,
 }: {
-  ingredients: SpoonacularIngredientList;
-}) => {
+  ingredients: SpoonacularExtendedIngredientList;
+}) {
   return (
     <View>
       {ingredients.map((ingredient) => (
-        <View key={ingredient.id}>
-          <Unorderedlist style={styles.bulletText}>
+        <View
+          key={`${ingredient.id}-${ingredient.name}-${ingredient.original}`}
+          style={styles.listItem}
+        >
+          <Unorderedlist bulletUnicode={0x2022}>
             <Text style={styles.ingredientText}>{ingredient.original}</Text>
           </Unorderedlist>
         </View>
       ))}
     </View>
   );
-};
+}
+
+function NumberedList({ items }: { items: string[] }) {
+  return (
+    <View>
+      {items.map((item, index) => (
+        <Text key={`${index}-${item}`} style={styles.directionText}>
+          {index + 1}. {item}
+        </Text>
+      ))}
+    </View>
+  );
+}
 
 export default function RecipeReader() {
-  const [data, setData] = useState(createInitialProps);
+  const route = useRoute<RecipeReaderRouteProp>();
+  const { recipeId } = route.params;
+
+  const [data, setData] = useState<RecipeProps>(createInitialProps());
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -65,30 +90,48 @@ export default function RecipeReader() {
       try {
         setLoading(true);
 
-        const testId: number = 324694;
+        const numericRecipeId = Number(recipeId);
 
         const recipe: SpoonacularRecipeInformation = await getRecipeInformation(
-          testId,
+          numericRecipeId,
           false,
         );
 
-        if (recipe) {
-          const firstSentence =
-            stripHtml(recipe.summary?.split(".")[0] ?? "").result || "";
+        const instructionsResponse: SpoonacularRecipeInstructions =
+          await getRecipeInstructions(numericRecipeId);
 
-          setData({
-            title: recipe.title,
-            recipeType: recipe.dishTypes.join(" / "),
-            detailCards: {
-              "Total time": `${recipe.readyInMinutes} min.`,
-              Servings: recipe.servings.toString(),
-            },
-            textIntro: firstSentence ? `${firstSentence}.` : "",
-            ingredients: recipe.extendedIngredients,
-            bodyText: "",
-            heroImageUri: recipe.image,
-          });
+        let textIntro = "";
+        if (recipe.summary) {
+          if (recipe.summary.includes(".")) {
+            textIntro = stripHtml(recipe.summary.split(".")[0]).result + ".";
+          } else {
+            textIntro = stripHtml(recipe.summary).result;
+          }
         }
+
+        const instructionSteps = Array.isArray(
+          (instructionsResponse as any)?.[0]?.steps,
+        )
+          ? (instructionsResponse as any)[0].steps
+              .map((step: any) => step.step)
+              .filter(Boolean)
+          : [];
+
+        setData({
+          title: recipe.title,
+          recipeType:
+            recipe.dishTypes?.length > 0
+              ? recipe.dishTypes.join(" / ")
+              : "Recipe",
+          detailCards: {
+            "Total time": `${recipe.readyInMinutes} min`,
+            Servings: recipe.servings.toString(),
+          },
+          textIntro,
+          ingredients: recipe.extendedIngredients ?? [],
+          heroImageUri: recipe.image,
+          instructions: instructionSteps,
+        });
       } catch (error) {
         console.error("Error loading recipe:", error);
       } finally {
@@ -97,25 +140,26 @@ export default function RecipeReader() {
     };
 
     fetchRecipe();
-  }, []);
+  }, [recipeId]);
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.statusBarBackground} />
-
       {!!data.heroImageUri && (
-        <Image style={styles.heroImage} source={{ uri: data.heroImageUri }} />
+        <Image source={{ uri: data.heroImageUri }} style={styles.heroImage} />
       )}
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
         <View style={styles.card}>
           <Text style={styles.title}>{data.title}</Text>
           <Text style={styles.recipeType}>{data.recipeType}</Text>
@@ -137,10 +181,7 @@ export default function RecipeReader() {
           <IngredientList ingredients={data.ingredients} />
 
           <Text style={styles.header}>Directions</Text>
-          <Text style={styles.bodyText}>
-            Recipe directions can be added here once you wire in the
-            instructions endpoint.
-          </Text>
+          <NumberedList items={data.instructions} />
         </View>
       </ScrollView>
     </View>
@@ -150,90 +191,90 @@ export default function RecipeReader() {
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
+    backgroundColor: colors.background,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff",
   },
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-  },
-  scrollContent: {
-    paddingBottom: 100,
-  },
-  card: {
-    marginTop: 250,
-    backgroundColor: "#fff",
-    padding: 20,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    minHeight: 500,
-  },
-  detailCard: {
-    backgroundColor: "#F5F5F5",
-    width: 84,
-    height: 84,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 20,
-    marginRight: 10,
-    marginBottom: 10,
-    paddingHorizontal: 8,
+    backgroundColor: colors.background,
   },
   heroImage: {
-    height: 300,
     width: "100%",
-    position: "absolute",
-    top: 50,
+    height: 260,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 40,
+  },
+  card: {
+    marginTop: -24,
+    backgroundColor: colors.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    minHeight: 400,
   },
   title: {
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: "700",
-    color: "#111",
+    color: colors.black,
   },
   recipeType: {
-    marginBottom: 15,
-    fontSize: 18,
-    color: "#00000080",
+    marginTop: 6,
+    marginBottom: 16,
+    fontSize: 16,
+    color: "#777",
   },
   bodyText: {
-    fontSize: 18,
-    lineHeight: 28,
-    color: "#222",
-  },
-  ingredientText: {
-    fontSize: 18,
-    color: "#222",
-  },
-  bulletText: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  bold: {
-    fontWeight: "700",
-    textAlign: "center",
-  },
-  infoText: {
-    color: "#00000080",
-    textAlign: "center",
-    marginBottom: 4,
-    fontSize: 12,
+    fontSize: 16,
+    lineHeight: 24,
+    color: colors.black,
   },
   header: {
     fontWeight: "700",
-    fontSize: 24,
-    marginTop: 20,
+    fontSize: 22,
+    marginTop: 24,
     marginBottom: 12,
-    color: "#111",
+    color: colors.black,
   },
   horizontalFlex: {
     flexDirection: "row",
     flexWrap: "wrap",
-    marginTop: 18,
-    marginBottom: 8,
+    marginTop: 16,
+    gap: 10,
   },
-  statusBarBackground: {
-    height: 50,
-    backgroundColor: "orange",
+  detailCard: {
+    backgroundColor: "#F5F5F5",
+    minWidth: 110,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 18,
+  },
+  infoText: {
+    color: "#777",
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  bold: {
+    fontWeight: "700",
+    color: colors.black,
+  },
+  ingredientText: {
+    fontSize: 16,
+    color: colors.black,
+  },
+  directionText: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: colors.black,
+    marginBottom: 10,
+  },
+  listItem: {
+    marginBottom: 8,
   },
 });
