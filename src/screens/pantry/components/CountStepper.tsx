@@ -11,6 +11,7 @@ import colors from "../../../theme/colors";
 
 type Props = {
   quantity: number;
+  unit?: string;
   onIncrease: () => void;
   onDecrease: () => void;
   onQuantityChange?: (value: number) => void;
@@ -18,6 +19,7 @@ type Props = {
 
 export default function QuantityStepper({
   quantity,
+  unit,
   onIncrease,
   onDecrease,
   onQuantityChange,
@@ -61,19 +63,27 @@ export default function QuantityStepper({
       </TouchableOpacity>
 
       {editing ? (
-        <TextInput
-          ref={inputRef}
-          style={styles.quantityInput}
-          value={draft}
-          onChangeText={setDraft}
-          onBlur={commitValue}
-          onSubmitEditing={commitValue}
-          keyboardType="number-pad"
-          selectTextOnFocus
-        />
+        <View style={styles.quantityGroup}>
+          <TextInput
+            ref={inputRef}
+            style={styles.quantityInput}
+            value={draft}
+            onChangeText={setDraft}
+            onBlur={commitValue}
+            onSubmitEditing={commitValue}
+            keyboardType="number-pad"
+            selectTextOnFocus
+          />
+          {!!unit && <Text style={styles.unit}>{unit}</Text>}
+        </View>
       ) : (
-        <TouchableOpacity onPress={startEditing} activeOpacity={0.6}>
+        <TouchableOpacity
+          onPress={startEditing}
+          activeOpacity={0.6}
+          style={styles.quantityGroup}
+        >
           <Text style={styles.quantity}>{quantity}</Text>
+          {!!unit && <Text style={styles.unit}>{unit}</Text>}
         </TouchableOpacity>
       )}
 
@@ -109,15 +119,24 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     minWidth: 28,
     textAlign: "center",
-    marginHorizontal: 8,
     color: colors.black,
+  },
+  quantityGroup: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    marginHorizontal: 8,
+  },
+  unit: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "#888",
+    marginLeft: 3,
   },
   quantityInput: {
     fontSize: 18,
     fontWeight: "600",
     minWidth: 28,
     textAlign: "center",
-    marginHorizontal: 8,
     color: colors.black,
     borderBottomWidth: 1.5,
     borderBottomColor: colors.white,

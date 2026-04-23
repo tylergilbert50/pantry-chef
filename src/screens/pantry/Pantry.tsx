@@ -5,6 +5,8 @@ import {
   FlatList,
   RefreshControl,
   Modal,
+  Keyboard,
+  Pressable,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import colors from "../../theme/colors";
@@ -37,6 +39,20 @@ export function Pantry() {
   const [refreshing, setRefreshing] = useState(false);
   const [editingItem, setEditingItem] = useState<any | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const keyboardVisibleRef = useRef(false);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", () => {
+      keyboardVisibleRef.current = true;
+    });
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      keyboardVisibleRef.current = false;
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const openSwipeable = useRef<{
     id: string;
@@ -196,8 +212,14 @@ export function Pantry() {
           }),
     );
 
+  const handleBackgroundPress = () => {
+    if (keyboardVisibleRef.current) {
+      Keyboard.dismiss();
+    }
+  };
+
   return (
-    <View style={styles.container}>
+    <Pressable style={styles.container} onPress={handleBackgroundPress}>
       <View style={styles.header} />
 
       <View style={styles.searchWrapper}>
@@ -252,11 +274,17 @@ export function Pantry() {
               onDecrease={() => updateQuantity(itemId, -1)}
               onDelete={() => handleDelete(itemId)}
               onQuantityChange={(value) => setQuantity(itemId, value)}
-              onPress={
-                editMode.active
-                  ? () => editMode.toggle(itemId)
-                  : () => setEditingItem(item)
-              }
+              onPress={() => {
+                if (keyboardVisibleRef.current) {
+                  Keyboard.dismiss();
+                  return;
+                }
+                if (editMode.active) {
+                  editMode.toggle(itemId);
+                } else {
+                  setEditingItem(item);
+                }
+              }}
               onSwipeOpen={(id, close) => {
                 if (openSwipeable.current && openSwipeable.current.id !== id) {
                   openSwipeable.current.close();
@@ -292,7 +320,7 @@ export function Pantry() {
           onDone={handleEditDone}
         />
       </Modal>
-    </View>
+    </Pressable>
   );
 }
 
