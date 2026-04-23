@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -194,11 +194,13 @@ export function Recipes() {
     }
   }, [pantryId, userId]);
 
-  useEffect(() => {
-    if (!userLoading) {
-      loadRecipes();
-    }
-  }, [userLoading, loadRecipes]);
+  useFocusEffect(
+    useCallback(() => {
+      if (!userLoading) {
+        loadRecipes();
+      }
+    }, [userLoading, loadRecipes]),
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);

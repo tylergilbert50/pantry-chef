@@ -1,10 +1,6 @@
 import { supabase } from "../lib/supabase";
 import { Database } from "../../types/database.types";
-import {
-  getIngredientBySpoonacularId,
-  updateIngredient,
-  getIngredients,
-} from "@/services/ingredientService";
+import { updateIngredient, getIngredients } from "@/services/ingredientService";
 import {
   getRecipeInformation,
   getRecipeInformationBulk,
@@ -51,39 +47,141 @@ export const upsertRecipe = async (recipe: recipeInsert) => {
 
 // a function madeRecipe() will call the above function to update made_on as well as multiple calls to updateIngredient to deduct the right amounts for each
 
-export const madeRecipe = async (recipeId: string, pantryId: string) => {
+export type MadeRecipeDeduction = {
+  ingredientName: string;
+  status: "deducted" | "skipped-no-match" | "skipped-no-conversion" | "failed";
+  before?: { quantity: number; unit: string };
+  after?: { quantity: number; unit: string };
+  error?: string;
+};
+
+export type MadeRecipeResult = {
+  deductions: MadeRecipeDeduction[];
+  // True if the recipe row was upserted; false means even that failed.
+  markedAsMade: boolean;
+};
+
+// Round to 2 decimal places to avoid floating-point noise like 0.9999999 oz
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+export const madeRecipe = async (
+  recipeId: string,
+  pantryId: string,
+): Promise<MadeRecipeResult> => {
   const data = await getRecipeInformation(Number(recipeId), false);
-  for (const i of data.extendedIngredients) {
-    const { data: match } = await getIngredientBySpoonacularId(pantryId, i.id);
-    if (match) {
-      const before = { quantity: match.quantity, unit: match.unit };
-      const deduct = { quantity: i.amount, unit: i.unit };
-      const after = convert(before, deduct, i.name);
-      if (after != null) {
-        await updateIngredient(match.ingredient_id, { quantity: after });
-      }
+
+  // Load the pantry once so we can use shared matching (id + name fallback)
+  const { data: pantryItems } = await getIngredients(pantryId);
+  const pantryRows = pantryItems ?? [];
+
+  // Build deduction plan up front so we can run them in parallel
+  const plan = data.extendedIngredients.map((recipeIng) => {
+    const match = findPantryMatch(recipeIng, pantryRows);
+    if (!match) {
+      return {
+        recipeIng,
+        match: null,
+        reason: "skipped-no-match" as const,
+      };
     }
+
+    const after = convert(
+      { quantity: match.quantity, unit: match.unit },
+      { quantity: recipeIng.amount, unit: recipeIng.unit },
+      recipeIng.name,
+    );
+
+    if (after == null) {
+      return { recipeIng, match, reason: "skipped-no-conversion" as const };
+    }
+
+    // Clamp at 0 — never write negative quantities to the DB
+    const clamped = Math.max(0, round2(after));
+    return { recipeIng, match, after: clamped };
+  });
+
+  const deductions: MadeRecipeDeduction[] = await Promise.all(
+    plan.map(async (step): Promise<MadeRecipeDeduction> => {
+      if ("reason" in step && step.reason === "skipped-no-match") {
+        return {
+          ingredientName: step.recipeIng.name,
+          status: "skipped-no-match",
+        };
+      }
+      if ("reason" in step && step.reason === "skipped-no-conversion") {
+        return {
+          ingredientName: step.recipeIng.name,
+          status: "skipped-no-conversion",
+          before: { quantity: step.match!.quantity, unit: step.match!.unit },
+        };
+      }
+
+      const { match, after, recipeIng } = step as {
+        recipeIng: SpoonacularExtendedIngredient;
+        match: PantryIngredientRow;
+        after: number;
+      };
+
+      // Note: `in_stock` is a generated column in the DB — it's computed from
+      // `quantity` automatically, so we don't write to it here.
+      const { error } = await updateIngredient(match.ingredient_id, {
+        quantity: after,
+      });
+
+      if (error) {
+        console.error(
+          `madeRecipe: failed to deduct ${recipeIng.name}:`,
+          error.message,
+        );
+        return {
+          ingredientName: recipeIng.name,
+          status: "failed",
+          before: { quantity: match.quantity, unit: match.unit },
+          error: error.message,
+        };
+      }
+
+      return {
+        ingredientName: recipeIng.name,
+        status: "deducted",
+        before: { quantity: match.quantity, unit: match.unit },
+        after: { quantity: after, unit: match.unit },
+      };
+    }),
+  );
+
+  // Mark recipe as made regardless of deduction outcomes (best-effort)
+  let markedAsMade = false;
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const userId = user?.id;
+    if (!userId) throw new Error("No authenticated user");
+
+    const { data: existing } = await supabase
+      .from("recipes")
+      .select("saved")
+      .eq("recipe_id", recipeId)
+      .eq("user_id", userId)
+      .single();
+
+    const recipe: recipeInsert = {
+      recipe_id: recipeId,
+      user_id: userId,
+      recipe_name: data.title,
+      saved: existing?.saved ?? false,
+      made_on: new Date().toISOString().split("T")[0],
+    };
+    await upsertRecipe(recipe);
+    markedAsMade = true;
+  } catch (err) {
+    console.error("madeRecipe: failed to mark recipe as made:", err);
   }
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const userId = user!.id;
 
-  const { data: existing } = await supabase
-    .from("recipes")
-    .select("saved")
-    .eq("recipe_id", recipeId)
-    .eq("user_id", userId)
-    .single();
-
-  const recipe: recipeInsert = {
-    recipe_id: recipeId,
-    user_id: userId,
-    recipe_name: data.title,
-    saved: existing?.saved ?? false,
-    made_on: new Date().toISOString().split("T")[0],
-  };
-  await upsertRecipe(recipe);
+  return { deductions, markedAsMade };
 };
 
 // stretch goal feature: createRecipe() requires:

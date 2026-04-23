@@ -9,7 +9,8 @@ import {
   TouchableOpacity,
   Alert,
 } from "react-native";
-import { RouteProp, useRoute } from "@react-navigation/native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Unorderedlist from "react-native-unordered-list";
 import { stripHtml } from "string-strip-html";
 
@@ -88,6 +89,8 @@ function NumberedList({ items }: { items: string[] }) {
 
 export default function RecipeReader() {
   const route = useRoute<RecipeReaderRouteProp>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RecipesStackParamList>>();
   const { recipeId } = route.params;
   const { profile } = useUser();
   const pantryId = profile?.pantry_id;
@@ -103,7 +106,21 @@ export default function RecipeReader() {
     }
     setMakingRecipe(true);
     try {
-      await madeRecipe(recipeId, pantryId);
+      const result = await madeRecipe(recipeId, pantryId);
+
+      // Best-effort: even if some deductions failed, we still mark it as made
+      // and return to the feed. Log any issues for debugging.
+      const failed = result.deductions.filter((d) => d.status === "failed");
+      if (failed.length > 0) {
+        console.warn(
+          `madeRecipe: ${failed.length} ingredient deduction(s) failed`,
+          failed,
+        );
+      }
+
+      // Close the reader — the recipes feed re-fetches on focus and will
+      // reflect the updated pantry.
+      navigation.goBack();
     } catch (error) {
       console.error("madeRecipe failed:", error);
       const message =
