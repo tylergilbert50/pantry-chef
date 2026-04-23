@@ -154,7 +154,6 @@ export function IngredientForm({
 
       const { error: updateError } = await updateIngredient(
         existingIngredient.ingredient_id,
-        pantryId,
         updates,
       );
 

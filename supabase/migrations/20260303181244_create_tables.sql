@@ -19,7 +19,7 @@ CREATE TABLE pantry_ingredients (
     name_normalized TEXT NOT NULL,
     name_product TEXT NOT NULL,
     category TEXT NOT NULL,
-    quantity DECIMAL,
+    quantity DECIMAL NOT NULL,
     unit TEXT NOT NULL,
     low_stock_threshold DECIMAL,
     in_stock BOOLEAN GENERATED ALWAYS AS (

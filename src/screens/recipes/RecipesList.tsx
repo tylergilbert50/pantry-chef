@@ -73,7 +73,7 @@ export function RecipesList({ mode }: RecipesListProps) {
         : prev.map((r) => (r.recipe_id === recipe.recipe_id ? updated : r)),
     );
 
-    await upsertRecipe(recipe.recipe_id, userId, {
+    await upsertRecipe({
       ...recipe,
       saved: !recipe.saved,
     });

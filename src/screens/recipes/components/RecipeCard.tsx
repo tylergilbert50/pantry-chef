@@ -19,8 +19,8 @@ export default function RecipeCard({
   title,
   name,
   mealType,
+  saved = false,
   image,
-  saved,
   madeOn,
   size = "small",
   onPress,
@@ -39,6 +39,15 @@ export default function RecipeCard({
       ) : (
         <View style={styles.imagePlaceholder} />
       )}
+      <View style={styles.imagePlaceholder}>
+        <TouchableOpacity style={styles.heartButton} onPress={onToggleSave}>
+          <Ionicons
+            name={saved ? "heart" : "heart-outline"}
+            size={22}
+            color={saved ? colors.secondary : colors.white}
+          />
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.content}>
         <Text numberOfLines={2} style={styles.title}>
@@ -89,6 +98,17 @@ const styles = StyleSheet.create({
     height: 130,
     width: "100%",
     backgroundColor: "#CFCFCF",
+  },
+  heartButton: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   content: {
     alignItems: "center",

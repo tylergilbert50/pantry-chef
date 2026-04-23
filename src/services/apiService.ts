@@ -23,13 +23,15 @@ export interface SpoonacularProduct {
 }
 
 export type SpoonacularIngredient = {
-  name: string;
-  original: string;
-  image: string;
-  id: number;
-  aisle: string;
-  possibleUnits: Array<string>;
-};
+    name: string;
+    original: string;
+    image: string;
+    id: number;
+    aisle: string;
+    amount: number;
+    unit: string;
+    possibleUnits: Array<string>;
+}
 
 export type InputIngredient = {
   name: string;
