@@ -12,7 +12,7 @@ import { stripHtml } from "string-strip-html";
 
 import {
   SpoonacularRecipeInformation,
-  SpoonacularIngredientList,
+  SpoonacularExtendedIngredientList,
   getRecipeInformation,
 } from "../../../services/apiService";
 
@@ -21,7 +21,7 @@ type RecipeProps = {
   recipeType: string;
   detailCards: Record<string, string>;
   textIntro: string;
-  ingredients: SpoonacularIngredientList;
+  ingredients: SpoonacularExtendedIngredientList;
   bodyText: string;
   heroImageUri: string;
 };
@@ -41,12 +41,12 @@ function createInitialProps(): RecipeProps {
 const IngredientList = ({
   ingredients,
 }: {
-  ingredients: SpoonacularIngredientList;
+  ingredients: SpoonacularExtendedIngredientList;
 }) => {
   return (
     <View>
-      {ingredients.map((ingredient) => (
-        <View key={ingredient.id}>
+      {ingredients.map((ingredient, index) => (
+          <View key={`${ingredient.id}-${index}`}>
           <Unorderedlist style={styles.bulletText}>
             <Text style={styles.ingredientText}>{ingredient.original}</Text>
           </Unorderedlist>
