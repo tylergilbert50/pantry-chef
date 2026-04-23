@@ -1,3 +1,6 @@
 {
-  "urlRandomness": "ZUmg1GU"
+  "urlRandomness": "ZUmg1GU",
+  "dev": true,
+  "minify": false,
+  "https": false
 }
