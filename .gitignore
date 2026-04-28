@@ -5,3 +5,4 @@ supabase_linux_amd64.tar.gz
 supabase/.temp/
 .idea/scripts/*.js
 my-upload-key.keystore
+.expo/
