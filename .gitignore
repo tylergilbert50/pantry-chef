@@ -6,3 +6,4 @@ supabase/.temp/
 .idea/scripts/*.js
 my-upload-key.keystore
 .expo/
+android/

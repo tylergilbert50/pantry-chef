@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "my-app",
-    "slug": "my-app",
+    "name": "Pantry Chef",
+    "slug": "pantry-chef",
     "scheme": "pantry-chef",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -33,6 +33,9 @@
       "expo-router"
     ],
     "extra": {
+      "EXPO_PUBLIC_SUPABASE_URL": "https://ptuaiexefwerwkziicwh.supabase.co",
+      "EXPO_PUBLIC_SUPABASE_ANON_KEY": "key goes here",
+      "EXPO_PUBLIC_SPOONACULAR_API_KEY": "second key goes here",
       "router": {},
       "eas": {
         "projectId": "2fb660be-d2e1-4965-991f-96b5fffe6209"

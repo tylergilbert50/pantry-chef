@@ -1,11 +1,12 @@
 import { Database } from "../../types/database.types";
 import { queryClient } from "../lib/queryClient";
+import Constants from 'expo-constants';
 import convert from "convert";
 
 export type IngredientInsert =
   Database["public"]["Tables"]["pantry_ingredients"]["Insert"];
 
-const SPOONACULAR_API_KEY = process.env.EXPO_PUBLIC_SPOONACULAR_API_KEY;
+const SPOONACULAR_API_KEY = Constants.expoConfig?.extra?.EXPO_PUBLIC_SPOONACULAR_API_KEY;
 const SPOONACULAR_CDN = "https://img.spoonacular.com/ingredients_250x250";
 
 type Unit = "g" | "kg" | "oz" | "lb" | "ml" | "l" | "tsp" | "tbsp" | "cup";
