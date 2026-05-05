@@ -144,7 +144,7 @@ export function Recipes() {
 
       const foundRecipes: SpoonacularRecipe[] = await searchRecipes(
         pantryNamesForSearch.join(","),
-        30,
+        100,
         2, // Ranking 2 minimizes missing ingredients
         false,
       );
@@ -158,9 +158,10 @@ export function Recipes() {
       const detailedRecipes: SpoonacularRecipeInformation[] =
         await getRecipeInformationBulk(ids, false);
 
+      // Debug here
       const matchedRecipes = detailedRecipes.filter(
         (recipe) => canMakeRecipe(recipe, pantryRows).canMake,
-      );
+      );//*/
 
       const uniqueRecipes = Array.from(
         new Map(
@@ -175,6 +176,7 @@ export function Recipes() {
           ]),
         ).values(),
       );
+      console.log(uniqueRecipes);
 
       setRecipes(uniqueRecipes);
 

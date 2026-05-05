@@ -1,12 +1,13 @@
 {
   "expo": {
     "name": "Pantry Chef",
-    "slug": "pantry-chef",
+    "slug": "my-app",
     "scheme": "pantry-chef",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "icon": "./assets/icons/shrimp_orange.png",
     "splash": {
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"

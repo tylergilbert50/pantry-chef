@@ -354,9 +354,9 @@ export async function searchRecipes(
   ranking: number,
   ignorePantry: boolean,
 ): Promise<SpoonacularRecipeList> {
-  if (numberOfRecipes < 1 || numberOfRecipes > 100) {
+  if (numberOfRecipes < 1 || numberOfRecipes > 200) {
     throw new Error(
-      "Number of recipes to return must be between 1 and 100 inclusive.",
+      "Number of recipes to return must be between 1 and 200 inclusive.",
     );
   }
   if (ranking != 1 && ranking != 2) {
