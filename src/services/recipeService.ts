@@ -1,7 +1,7 @@
 import { supabase } from '../lib/supabase';
 import {Database} from "../../types/database.types";
 import {getIngredientBySpoonacularId, updateIngredient} from "@/services/ingredientService";
-import { fetchRecipeInformation } from "@/services/apiService";
+import { getRecipeInformation } from "@/services/apiService";
 import { convert } from "../utils/conversions";
 
 type recipeInsert = Database["public"]["Tables"]["recipes"]["Insert"];
@@ -39,7 +39,7 @@ export const upsertRecipe = async (recipe: recipeInsert) => {
 // a function madeRecipe() will call the above function to update made_on as well as multiple calls to updateIngredient to deduct the right amounts for each
 
 export const madeRecipe = async (recipeId: string, pantryId: string) => {
-    const data = await fetchRecipeInformation(Number(recipeId), false);
+    const data = await getRecipeInformation(Number(recipeId), false);
     for (const i of data.extendedIngredients) {
         const {data: match, error} = await getIngredientBySpoonacularId(pantryId, i.id);
         if (match) {
